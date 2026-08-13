@@ -9,5 +9,8 @@
   },
   "devDependencies": {
     "serve": "^14.2.4"
+  },
+  "dependencies": {
+    "pg": "^8.23.0"
   }
 }
