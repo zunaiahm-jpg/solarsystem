@@ -4,14 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Solar System — Eyes on the Solar System</title>
-  <meta name="description" content="Interactive 3D Solar System map powered by Three.js" />
+  <meta name="description" content="Explore the Solar System in adaptive 8K detail with free NASA imagery, immersive planetary terrain, and WebXR VR support." />
+  <meta name="theme-color" content="#000008" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;800&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/style.css?v=astronaut-9-vr" />
+  <link rel="stylesheet" href="css/style.css?v=surface-2" />
 </head>
 <body>
 
@@ -248,6 +249,29 @@
 
     <div class="info-stats-grid" id="info-stats"></div>
 
+    <section id="surface-explorer" class="surface-explorer hidden" aria-labelledby="surface-title">
+      <div class="surface-heading">
+        <div>
+          <span class="surface-eyebrow">IMMERSIVE TERRAIN</span>
+          <h3 id="surface-title">Surface exploration</h3>
+        </div>
+        <span id="surface-availability" class="surface-badge">READY</span>
+      </div>
+      <p id="surface-summary">Land on this world using adaptive 8K terrain and WebXR-ready controls.</p>
+      <div class="surface-status-grid">
+        <div><span>QUALITY</span><strong id="surface-quality">Detecting GPU…</strong></div>
+        <div><span>SOURCE</span><strong id="surface-source">NASA imagery</strong></div>
+      </div>
+      <div id="surface-progress-wrap" class="surface-progress-wrap" hidden>
+        <div class="surface-progress"><span id="surface-progress"></span></div>
+        <p id="surface-message" role="status" aria-live="polite">Preparing terrain…</p>
+      </div>
+      <div class="surface-actions">
+        <button id="btn-land" class="action-btn primary" type="button">Land on surface</button>
+        <button id="btn-return-orbit" class="action-btn secondary" type="button" hidden>Return to orbit</button>
+      </div>
+    </section>
+
     <section id="info-media" class="info-media hidden" aria-label="Official video and resources">
       <div class="media-heading">
         <span>MISSION VIDEO</span>
@@ -337,7 +361,19 @@
        TOOLTIP AND ASSET CREDITS
   ═══════════════════════════════════════════ -->
   <div id="tooltip" role="tooltip"></div>
-  <div id="asset-credits">Planet imagery: Solar System Scope / NASA data (CC BY 4.0) · 8K photographic sky: NASA/Goddard Space Flight Center · Live Earth clouds: EUMETSAT/NOAA/JMA via matteason</div>
+  <aside id="open-source-stack" class="open-source-stack" aria-label="Open-source exploration stack">
+    <button id="stack-toggle" class="stack-toggle" type="button" aria-expanded="false" aria-controls="stack-panel">
+      <span>OPEN SOURCE</span><strong>3 immersive engines</strong>
+    </button>
+    <div id="stack-panel" class="stack-panel" hidden>
+      <div class="stack-header"><span>FREE EXPLORATION STACK</span><button id="stack-close" type="button" aria-label="Close resources">×</button></div>
+      <a href="https://github.com/NASA-AMMOS/3DTilesRendererJS" target="_blank" rel="noopener noreferrer"><b>NASA AMMOS</b><span>Browser-native 3D Tiles + WebXR</span></a>
+      <a href="https://github.com/OpenSpace/OpenSpace" target="_blank" rel="noopener noreferrer"><b>OpenSpace</b><span>MIT desktop planetarium · 8K–16K installations</span></a>
+      <a href="https://gitlab.com/langurmonkey/gaiasky" target="_blank" rel="noopener noreferrer"><b>Gaia Sky</b><span>Open-source deep-universe visualization</span></a>
+      <p>OpenSpace and Gaia Sky are companion desktop engines. NASA AMMOS powers standards-based web tile streaming when a public tileset is available.</p>
+    </div>
+  </aside>
+  <div id="asset-credits">Planet imagery: Solar System Scope / NASA data (CC BY 4.0) · NASA AMMOS 3DTilesRendererJS (Apache-2.0) · OpenSpace (MIT) · Gaia Sky (MPL-2.0)</div>
 
   <!-- ═══════════════════════════════════════════
        IMPORT MAP + APP ENTRY
@@ -346,11 +382,12 @@
   {
     "imports": {
       "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+      "3d-tiles-renderer/three": "https://esm.sh/3d-tiles-renderer@0.5.1/three?external=three"
     }
   }
   </script>
-  <script type="module" src="js/app.js?v=astronaut-8"></script>
+  <script type="module" src="js/app.js?v=surface-3"></script>
   <script src="js/launch.js?v=launch-1" defer></script>
 
 </body>

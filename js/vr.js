@@ -57,6 +57,16 @@ let hoveredName = null;
 let selectedName = null;
 let statusLine = 'Point at a world · trigger to inspect';
 let lastMoveAmount = 0;
+let surfaceMode = false;
+let surfaceBody = null;
+const SURFACE_CENTER = new THREE.Vector3(12000, 0, 12000);
+
+export function setSurfaceMode(active, body = null) {
+  surfaceMode = !!active;
+  surfaceBody = body;
+  statusLine = surfaceMode ? `${String(body || 'planet').toUpperCase()} surface · walk with stick · snap turn` : 'Point at a world · trigger to inspect';
+  drawWristPanel();
+}
 
 export function isPresenting() {
   return presenting;
@@ -316,10 +326,15 @@ function handleSessionStart() {
   rig.add(camera);
 
   rig.rotation.set(0, 0, 0);
-  rig.position.copy(ARRIVAL_FROM);
-  startTravel(SPAWN, ARRIVAL_DURATION);
+  if (surfaceMode) {
+    rig.position.copy(SURFACE_CENTER).add(new THREE.Vector3(0, 26, 34));
+    startTravel(SURFACE_CENTER.clone().add(new THREE.Vector3(0, 1.7, 12)), 3.2);
+  } else {
+    rig.position.copy(ARRIVAL_FROM);
+    startTravel(SPAWN, ARRIVAL_DURATION);
+  }
 
-  statusLine = 'Approaching the solar system…';
+  statusLine = surfaceMode ? `Descending to ${surfaceBody || 'planet'} surface…` : 'Approaching the solar system…';
   hoveredName = null;
   drawWristPanel();
 
@@ -481,15 +496,26 @@ function updateFlight(step) {
   const orientation = new THREE.Quaternion();
   xrCamera.getWorldQuaternion(orientation);
 
-  // Full 6-DOF: you fly wherever you are looking, like a free-floating probe.
+  // Free flight in orbit; terrain-relative walking while landed.
   const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(orientation);
   const strafe = new THREE.Vector3(1, 0, 0).applyQuaternion(orientation);
+  if (surfaceMode) {
+    forward.y = 0;
+    strafe.y = 0;
+    forward.normalize();
+    strafe.normalize();
+  }
 
   const boost = (isSqueezed(left) || (right && isSqueezed(right))) ? BOOST_MULTIPLIER : 1;
-  const speed = BASE_SPEED * boost * step;
+  const speed = BASE_SPEED * (surfaceMode ? Math.min(boost, 1.8) : boost) * step;
 
   rig.position.addScaledVector(forward, -stick.y * speed);
   rig.position.addScaledVector(strafe, stick.x * speed);
+  if (surfaceMode) {
+    rig.position.y = Math.max(1.7, rig.position.y);
+    rig.position.x = THREE.MathUtils.clamp(rig.position.x, SURFACE_CENTER.x - 112, SURFACE_CENTER.x + 112);
+    rig.position.z = THREE.MathUtils.clamp(rig.position.z, SURFACE_CENTER.z - 112, SURFACE_CENTER.z + 112);
+  }
 }
 
 function updateSnapTurn() {
@@ -508,7 +534,7 @@ function updateSnapTurn() {
     snapArmed = true;
   }
 
-  if (stick.y) rig.position.y -= stick.y * BASE_SPEED * 0.016;
+  if (stick.y && !surfaceMode) rig.position.y -= stick.y * BASE_SPEED * 0.016;
 }
 
 function applySnapTurn(angle) {
