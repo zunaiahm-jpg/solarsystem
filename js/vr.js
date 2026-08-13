@@ -287,6 +287,21 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
 function handleSessionStart() {
   presenting = true;
 
+  // Stereo rendering across a 0.05 → 50000 depth range shimmers badly. Pull
+  // the near plane forward for the headset only; nothing is that close to
+  // your face out here anyway.
+  savedCamera.near = camera.near;
+  camera.near = 0.2;
+  camera.updateProjectionMatrix();
+
+  // Peripheral foveation buys headroom for a full 90 Hz refresh.
+  if (typeof renderer.xr.setFoveation === 'function') renderer.xr.setFoveation(0.6);
+  const session = renderer.xr.getSession?.();
+  if (session && typeof session.updateTargetFrameRate === 'function' && session.supportedFrameRates) {
+    const best = Math.max(...Array.from(session.supportedFrameRates).filter((r) => r <= 90));
+    if (Number.isFinite(best)) session.updateTargetFrameRate(best).catch(() => {});
+  }
+
   savedCamera.position.copy(camera.position);
   savedCamera.quaternion.copy(camera.quaternion);
   if (controls) {
@@ -318,6 +333,10 @@ function handleSessionEnd() {
   rig.remove(camera);
   camera.position.copy(savedCamera.position);
   camera.quaternion.copy(savedCamera.quaternion);
+  if (savedCamera.near) {
+    camera.near = savedCamera.near;
+    camera.updateProjectionMatrix();
+  }
   camera.updateMatrixWorld(true);
   if (controls) {
     controls.target.copy(savedCamera.target);
@@ -561,58 +580,120 @@ function notice(message) {
   el._timer = setTimeout(() => el.classList.remove('visible'), 6000);
 }
 
+function unavailableReason() {
+  if (!window.isSecureContext) {
+    return 'VR needs a secure connection. Open this page over HTTPS (the deployed vercel.app URL works).';
+  }
+  if (!navigator.xr) {
+    return 'This browser has no WebXR. Open the page inside a headset browser (Quest, Vision Pro, Pico) or a PCVR-linked Chrome/Edge window.';
+  }
+  return 'No headset is reporting to this browser yet. Put the headset on, make sure Link/SteamVR is running, then tap the visor again.';
+}
+
+/** Ask the browser whether an immersive session is possible, right now. */
+async function checkSupport() {
+  if (!window.isSecureContext || !navigator.xr) return false;
+  try {
+    return await navigator.xr.isSessionSupported('immersive-vr');
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Pick the best reference space the runtime actually grants. Requesting
+ * 'local-floor' outright throws on runtimes without floor tracking, which is
+ * one of the ways an otherwise healthy headset ends up showing an error.
+ */
+async function resolveReferenceSpace(session) {
+  for (const type of ['local-floor', 'local', 'viewer']) {
+    try {
+      await session.requestReferenceSpace(type);
+      renderer.xr.setReferenceSpaceType(type);
+      return type;
+    } catch {
+      /* try the next one */
+    }
+  }
+  return 'viewer';
+}
+
 function wireEnterButton() {
   const button = document.getElementById('btn-vr');
   if (!button) return;
 
   let session = null;
+  let supported = false;
 
-  const setUnsupported = (reason) => {
-    button.classList.add('vr-unsupported');
-    button.title = reason;
-    button.addEventListener('click', () => notice(reason));
+  const paint = () => {
+    button.classList.toggle('vr-ready', supported);
+    button.classList.toggle('vr-unsupported', !supported);
+    button.title = supported
+      ? 'Enter VR — step inside the solar system'
+      : unavailableReason();
   };
 
-  if (!window.isSecureContext) {
-    setUnsupported('VR needs a secure connection. Open this page over HTTPS.');
-    return;
-  }
+  const refresh = async () => {
+    supported = await checkSupport();
+    paint();
+  };
 
-  if (!navigator.xr) {
-    setUnsupported('No WebXR in this browser. Open the site in a Quest, Vision Pro, or Pico headset browser — or a PCVR-linked Chrome/Edge window.');
-    return;
-  }
+  refresh();
 
-  navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
-    if (!supported) {
-      setUnsupported('No VR headset detected. Connect a headset, or open this page inside its browser.');
+  // Headsets are frequently plugged in, woken, or Link-connected *after* the
+  // page has loaded. Re-poll so the button lights up instead of staying stuck
+  // on "not available".
+  if (navigator.xr && typeof navigator.xr.addEventListener === 'function') {
+    navigator.xr.addEventListener('devicechange', refresh);
+  }
+  window.addEventListener('focus', refresh);
+  window.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refresh();
+  });
+
+  button.addEventListener('click', () => {
+    if (session) {
+      session.end();
       return;
     }
 
-    button.classList.add('vr-ready');
-    button.title = 'Enter VR — step inside the solar system';
+    if (!window.isSecureContext || !navigator.xr) {
+      notice(unavailableReason());
+      return;
+    }
 
-    button.addEventListener('click', async () => {
-      if (session) {
-        session.end();
-        return;
-      }
-      try {
-        session = await navigator.xr.requestSession('immersive-vr', {
-          optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'layers']
-        });
+    // Request the session *synchronously* inside the click. Awaiting anything
+    // first (even isSessionSupported) burns the user activation on visionOS
+    // and Safari, and the request is then rejected on a perfectly good
+    // headset. We simply try, and explain if the runtime says no.
+    button.classList.add('vr-connecting');
+    navigator.xr.requestSession('immersive-vr', {
+      optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'layers']
+    })
+      .then(async (xrSession) => {
+        session = xrSession;
+        supported = true;
+        paint();
         session.addEventListener('end', () => {
           session = null;
           button.classList.remove('vr-active');
         });
+        await resolveReferenceSpace(session);
         await renderer.xr.setSession(session);
         button.classList.add('vr-active');
-      } catch (error) {
+        notice('Look around — stick to fly, grip to boost, trigger to inspect a world.');
+      })
+      .catch((error) => {
         session = null;
-        notice(`Could not start VR: ${error.message}`);
-      }
-    });
-  }).catch(() => {
-    setUnsupported('WebXR could not be queried in this browser.');
+        const name = error?.name || '';
+        if (name === 'NotSupportedError' || name === 'NotFoundError') {
+          notice(unavailableReason());
+        } else if (name === 'SecurityError' || name === 'InvalidStateError') {
+          notice('The browser blocked the VR session. Tap the visor button directly (not via a script) and allow the immersive prompt.');
+        } else {
+          notice(`Could not start VR: ${error?.message || error}`);
+        }
+      })
+      .finally(() => button.classList.remove('vr-connecting'));
   });
 }
