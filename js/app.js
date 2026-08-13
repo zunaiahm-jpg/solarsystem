@@ -5,7 +5,8 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { VRButton } from 'three/addons/webxr/VRButton.js';
+
+import { setupVR, updateVR, isPresenting } from './vr.js?v=astronaut-8';
 
 import {
   createStarField, createFamousStars, createConstellations,
@@ -36,11 +37,6 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
 renderer.shadowMap.enabled = false;
 renderer.xr.enabled = true;
-
-// VR button — lets students with a Quest / Vision Pro / PCVR headset step
-// inside the solar system. On non-VR devices the button shows "VR NOT
-// SUPPORTED" and the normal desktop experience is unaffected.
-document.body.appendChild(VRButton.createButton(renderer));
 
 // ─── Scene & Camera ──────────────────────────────────────────────────────────
 const scene = new THREE.Scene();
@@ -95,6 +91,22 @@ createNebulae(scene);
 requestAnimationFrame(() => {
   allClickable = [...solarSystemObjects, ...starObjects, ...nebulaObjects];
   createLabels(scene, allClickable);
+});
+
+// ─── Immersive VR ────────────────────────────────────────────────────────────
+// The headset user is placed on a camera rig (see js/vr.js) so they arrive in
+// open space near Earth's orbit instead of at world origin — which is the
+// middle of the Sun.
+setupVR({
+  renderer,
+  scene,
+  camera,
+  controls,
+  getTargets: () => allClickable,
+  onSelect: (mesh) => {
+    selectObject(mesh);
+    showInfoPanel(mesh);
+  }
 });
 
 // ─── Selection & camera-follow state ─────────────────────────────────────────
@@ -253,9 +265,10 @@ function animate() {
   const delta = clock.getDelta();
   const elapsed = clock.getElapsedTime();
   const timeScale = window._spaceMapTimeScale ?? 1;
+  const inVR = isPresenting();
 
-  // Fly animation
-  if (flyT < 1 && flyFrom && flyDest) {
+  // Fly animation (desktop only — in VR the rig owns camera movement)
+  if (!inVR && flyT < 1 && flyFrom && flyDest) {
     flyT = Math.min(1, flyT + delta / FLY_DURATION);
     const t = easeInOutCubic(flyT);
     camera.position.lerpVectors(flyFrom, flyDest, t);
@@ -269,7 +282,7 @@ function animate() {
   updateLabels(camera);
 
   // Camera follows the selected object as it orbits (once fly-in has settled)
-  if (followedMesh && flyT >= 1) {
+  if (!inVR && followedMesh && flyT >= 1) {
     const wp = new THREE.Vector3();
     followedMesh.getWorldPosition(wp);
     if (followLastPosition) {
@@ -290,20 +303,20 @@ function animate() {
   }
   renderer.toneMappingExposure = THREE.MathUtils.lerp(renderer.toneMappingExposure, targetExposure, 0.035);
 
+  if (inVR) {
+    // Thumbstick flight, snap-turn, pointer, comfort vignette and wrist HUD.
+    updateVR(delta);
+    renderer.render(scene, camera);
+    return;
+  }
+
   // Update UI elements
   updateCoordinates(camera.position);
   updateZoomLevel(camera.position.distanceTo(controls.target));
   updateCompass(camera);
 
   controls.update();
-
-  // Desktop gets the full post-processing pipeline (bloom + film grain);
-  // VR draws directly for stereo performance.
-  if (renderer.xr.isPresenting) {
-    renderer.render(scene, camera);
-  } else {
-    composer.render();
-  }
+  composer.render();
 }
 
 renderer.setAnimationLoop(animate);

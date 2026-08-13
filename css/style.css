@@ -829,12 +829,72 @@ body::after {
   color: var(--text-bright);
 }
 
-/* Three.js VR button styling */
-.vr-button {
-  position: fixed !important;
-  bottom: 64px !important;
-  right: 16px !important;
-  z-index: 110 !important;
+/* ════════════════════════════════════════════════════════════
+   VR VISOR BUTTON + NOTICE
+════════════════════════════════════════════════════════════ */
+#btn-vr.vr-ready {
+  color: var(--selection);
+  border-color: rgba(0, 255, 136, 0.45);
+  background: rgba(0, 255, 136, 0.08);
+}
+#btn-vr.vr-ready:hover {
+  color: var(--selection);
+  border-color: var(--selection);
+  box-shadow: 0 0 16px rgba(0, 255, 136, 0.45);
+}
+#btn-vr.vr-unsupported {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+#btn-vr.vr-connecting {
+  animation: vr-pulse 1s ease-in-out infinite;
+}
+#btn-vr.vr-active {
+  color: var(--selection);
+  border-color: var(--selection);
+  background: rgba(0, 255, 136, 0.18);
+  box-shadow: 0 0 18px rgba(0, 255, 136, 0.6);
+}
+@keyframes vr-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+#vr-notice {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--hud-h) + 20px);
+  transform: translate(-50%, 12px);
+  z-index: 400;
+  max-width: min(460px, calc(100vw - 40px));
+  padding: 12px 18px;
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius);
+  background: var(--panel);
+  backdrop-filter: var(--blur);
+  color: var(--text-bright);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+#vr-notice.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* Once the headset takes over the display, no DOM overlay is visible anyway —
+   hide it so a mirrored view stays clean. */
+body.xr-presenting #top-hud,
+body.xr-presenting #bottom-hud,
+body.xr-presenting #planet-sidebar,
+body.xr-presenting #info-panel,
+body.xr-presenting #tooltip,
+body.xr-presenting #asset-credits {
+  display: none !important;
 }
 
 /* Actions */

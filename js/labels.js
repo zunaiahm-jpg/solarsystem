@@ -76,7 +76,9 @@ export function createLabels(scene, objects) {
 
 export function updateLabels(camera) {
   if (!labelGroup || !labelsVisible) return;
-  const camPos = camera.position;
+  // In VR the camera is parented to a rig, so its local position is (0,0,0).
+  // Always measure from the resolved world position.
+  const camPos = camera.getWorldPosition(new THREE.Vector3());
 
   labels.forEach(({ sprite, target, offsetY, maxDist }) => {
     const worldPos = new THREE.Vector3();
