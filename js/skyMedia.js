@@ -69,9 +69,14 @@ function detectCapabilities(renderer) {
 
   return {
     maxTextureSize,
-    // An 8K RGBA mipmapped plate costs roughly 170 MB of VRAM. Machines that
-    // report 4 GB or less of system memory are given the 4K plate instead.
-    memoryBudget: deviceMemory === null ? 8 : deviceMemory,
+    // `navigator.deviceMemory` is a coarse, privacy-clamped hint: Chrome caps
+    // the reported value at 4 GB regardless of how much RAM the machine
+    // actually has, and Safari/Firefox omit it entirely. Treating "4" as
+    // "low memory" therefore downgrades most desktops — and every headset —
+    // to the 4K plate even when the GPU advertises an 8192px limit. The GPU's
+    // own maxTextureSize is the only trustworthy signal here, so the memory
+    // hint is only allowed to veto when a device explicitly reports <= 2 GB.
+    lowMemory: deviceMemory !== null && deviceMemory <= 2,
     saveData: connection.saveData === true,
     reducedMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
   };
@@ -174,7 +179,7 @@ export async function loadSky({ renderer, onTexture, onStatus }) {
   };
 
   const affordable = STILL_TIERS.filter(
-    (tier) => tier.width <= caps.maxTextureSize && (tier.width <= 4096 || caps.memoryBudget >= 6)
+    (tier) => tier.width <= caps.maxTextureSize && (tier.width <= 4096 || !caps.lowMemory)
   );
   const plates = affordable.length ? affordable : [STILL_TIERS[0]];
 

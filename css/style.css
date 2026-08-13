@@ -296,33 +296,6 @@ body::after {
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
-.live-quality {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  height: 26px;
-  padding: 0 9px;
-  border: 1px solid rgba(0, 255, 153, 0.24);
-  border-radius: 20px;
-  background: rgba(0, 255, 153, 0.055);
-  color: #78ffc7;
-  font: 700 8px/1 var(--font-head);
-  letter-spacing: .12em;
-}
-.live-quality strong {
-  padding-left: 5px;
-  border-left: 1px solid rgba(0, 255, 153, 0.2);
-  color: var(--text-bright);
-}
-.live-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #00ff99;
-  box-shadow: 0 0 8px #00ff99;
-  animation: livePulse 1.8s ease-in-out infinite;
-}
-
 .hud-btn:hover {
   color: var(--accent);
   border-color: var(--border-hover);
@@ -1304,11 +1277,6 @@ body.xr-presenting #asset-credits {
   letter-spacing: .04em;
   text-align: right;
   pointer-events: none;
-}
-
-@keyframes livePulse {
-  0%, 100% { opacity: .4; transform: scale(.8); }
-  50% { opacity: 1; transform: scale(1.15); }
 }
 
 @keyframes pulse {
