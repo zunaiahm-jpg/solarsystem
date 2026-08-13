@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solar System — Eyes on the Solar System</title>
+  <meta name="description" content="Interactive 3D Solar System map powered by Three.js" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;800&family=Rajdhani:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css?v=astronaut-9-vr" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       LOADING SCREEN
+  ═══════════════════════════════════════════ -->
+  <div id="loading-screen">
+    <div class="loading-inner">
+      <div class="loading-logo">🌌</div>
+      <h1>SOLAR SYSTEM</h1>
+      <p class="loading-subtitle">Eyes on the Solar System</p>
+      <div class="loading-track">
+        <div id="loader-progress" class="loading-fill"></div>
+      </div>
+      <p id="loader-text" class="loader-status">Initializing…</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       THREE.JS CANVAS
+  ═══════════════════════════════════════════ -->
+  <canvas id="space-canvas"></canvas>
+
+  <!-- ═══════════════════════════════════════════
+       TOP HUD BAR
+  ═══════════════════════════════════════════ -->
+  <div id="top-hud">
+
+    <!-- Logo -->
+    <div class="top-logo">
+      <span class="logo-icon">🪐</span>
+      <span class="logo-text">SOLAR<br>SYSTEM</span>
+    </div>
+
+    <!-- Search -->
+    <div class="top-center">
+      <div class="search-wrap">
+        <button id="search-submit" class="search-icon" type="button" aria-label="Search space objects" title="Search">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="13" y1="13" x2="18" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search objects…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <div id="search-results"></div>
+      </div>
+    </div>
+
+    <!-- Right controls -->
+    <div class="top-right">
+      <div class="live-quality" title="Live Earth cloud imagery updated daily by EUMETSAT/NOAA. Sky panorama: ESO/S. Brunier.">
+        <span class="live-dot"></span>
+        <span>LIVE</span>
+        <strong>ESO PHOTO SKY · LIVE CLOUDS</strong>
+      </div>
+      <button class="hud-btn" id="btn-solar-system" title="Solar System View">⊙</button>
+      <button class="hud-btn" id="btn-galaxy" title="Wide View">✦</button>
+      <button class="hud-btn" id="btn-reset" title="Reset View">⌂</button>
+      <button class="hud-btn" id="btn-vr" type="button" aria-label="Enter VR" title="Enter VR — step inside the solar system">🥽</button>
+    </div>
+
+  </div><!-- /#top-hud -->
+
+  <!-- ═══════════════════════════════════════════
+       LEFT PLANET SIDEBAR
+  ═══════════════════════════════════════════ -->
+  <div id="planet-sidebar">
+
+    <div class="sidebar-section-label">OBJECTS</div>
+
+    <button class="planet-btn" data-id="sun" title="Sun">
+      <div class="planet-dot" style="background: radial-gradient(circle at 35% 35%, #fff 8%, #FFD700 35%, #FF8800 75%, #CC4400 100%)"></div>
+      <span class="planet-label">Sun</span>
+    </button>
+
+    <button class="planet-btn" data-id="mercury" title="Mercury">
+      <div class="planet-dot" style="background: radial-gradient(circle at 35% 35%, #b0a090 20%, #8C7853 60%, #5a4a3a 100%)"></div>
+      <span class="planet-label">Mercury</span>
+    </button>
+
+    <button class="planet-btn" data-id="venus" title="Venus">
+      <div class="planet-dot" style="background: radial-gradient(circle at 35% 35%, #F8E8B0 15%, #F0D090 45%, #C8A050 80%)"></div>
+      <span class="planet-label">Venus</span>
+    </button>
+
+    <button class="planet-btn" data-id="earth" title="Earth">
+      <div class="planet-dot" style="background: radial-gradient(circle at 35% 35%, #7FD9FF 10%, #4FC3F7 30%, #1565C0 55%, #2E7D32 80%)"></div>
+      <span class="planet-label">Earth</span>
+    </button>
+
+    <button class="planet-btn" data-id="mars" title="Mars">
+      <div class="planet-dot" style="background: radial-gradient(circle at 35% 35%, #FF9980 15%, #E57373 45%, #C62828 85%)"></div>
+      <span class="planet-label">Mars</span>
+    </button>
+
+    <button class="planet-btn" data-id="jupiter" title="Jupiter">
+      <div class="planet-dot" style="background: repeating-linear-gradient(180deg, #C88B3A 0%, #E8C070 18%, #A06020 36%, #D08040 54%, #C88B3A 72%)"></div>
+      <span class="planet-label">Jupiter</span>
+    </button>
+
+    <button class="planet-btn" data-id="saturn" title="Saturn">
+      <div class="planet-dot saturn-dot" style="background: radial-gradient(circle at 38% 35%, #F8ECC0 15%, #EAD59B 50%, #C8A050 85%)"></div>
+      <span class="planet-label">Saturn</span>
+    </button>
+
+    <button class="planet-btn" data-id="uranus" title="Uranus">
+      <div class="planet-dot" style="background: radial-gradient(circle at 35% 35%, #D0FFFF 10%, #A7EEFF 40%, #7DE8E8 80%)"></div>
+      <span class="planet-label">Uranus</span>
+    </button>
+
+    <button class="planet-btn" data-id="neptune" title="Neptune">
+      <div class="planet-dot" style="background: radial-gradient(circle at 35% 35%, #8899FF 15%, #5580FF 45%, #1A2FA0 85%)"></div>
+      <span class="planet-label">Neptune</span>
+    </button>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section-label">LAYERS</div>
+
+    <div class="layer-toggle-item">
+      <label class="nano-toggle" title="Toggle Orbits">
+        <input type="checkbox" id="toggle-orbits" />
+        <span class="nano-slider"></span>
+      </label>
+      <span>Orbits</span>
+    </div>
+
+    <div class="layer-toggle-item">
+      <label class="nano-toggle" title="Toggle Labels">
+        <input type="checkbox" id="toggle-labels" />
+        <span class="nano-slider"></span>
+      </label>
+      <span>Labels</span>
+    </div>
+
+    <div class="layer-toggle-item">
+      <label class="nano-toggle" title="Toggle Nebulae">
+        <input type="checkbox" id="toggle-nebulae" />
+        <span class="nano-slider"></span>
+      </label>
+      <span>Nebulae</span>
+    </div>
+
+    <div class="layer-toggle-item">
+      <label class="nano-toggle" title="Toggle Stars">
+        <input type="checkbox" id="toggle-stars" checked />
+        <span class="nano-slider"></span>
+      </label>
+      <span>Stars</span>
+    </div>
+
+    <div class="layer-toggle-item">
+      <label class="nano-toggle" title="Toggle Constellation Lines">
+        <input type="checkbox" id="toggle-constellations" />
+        <span class="nano-slider"></span>
+      </label>
+      <span>Lines</span>
+    </div>
+
+    <div class="layer-toggle-item">
+      <label class="nano-toggle" title="Toggle Planets">
+        <input type="checkbox" id="toggle-planets" checked />
+        <span class="nano-slider"></span>
+      </label>
+      <span>Planets</span>
+    </div>
+
+  </div><!-- /#planet-sidebar -->
+
+  <!-- ═══════════════════════════════════════════
+       RIGHT INFO PANEL
+  ═══════════════════════════════════════════ -->
+  <div id="info-panel" class="hidden">
+
+    <button id="info-close" title="Close">✕</button>
+
+    <div class="info-hero">
+      <div class="info-icon" id="info-icon">🌍</div>
+      <div class="info-title-wrap">
+        <h2 id="info-name">Earth</h2>
+        <span class="info-badge" id="info-type">Planet</span>
+      </div>
+    </div>
+
+    <p id="info-description"></p>
+
+    <div class="info-stats-grid" id="info-stats"></div>
+
+    <section id="info-media" class="info-media hidden" aria-label="Official video and resources">
+      <div class="media-heading">
+        <span>MISSION VIDEO</span>
+        <span id="media-quality"></span>
+      </div>
+      <div id="media-title" class="media-title"></div>
+      <div class="video-frame">
+        <iframe
+          id="info-video"
+          title="Official space video"
+          loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <nav id="info-links" class="info-links" aria-label="More information"></nav>
+    </section>
+
+    <section id="latest-developments" class="latest-dev hidden" aria-label="Latest developments from NASA">
+      <div class="news-heading">
+        <span>📡 LATEST DEVELOPMENTS</span>
+        <a class="news-rss-link" href="https://www.nasa.gov/news-release/feed/" target="_blank" rel="noopener noreferrer">RSS</a>
+      </div>
+      <div class="news-feed" id="news-feed"></div>
+    </section>
+
+    <div class="info-actions">
+      <button id="btn-fly-to" class="action-btn primary">
+        <span>🚀</span> Fly There
+      </button>
+      <button id="btn-focus" class="action-btn secondary">
+        <span>◎</span> Focus
+      </button>
+    </div>
+
+    <!-- Decorative scan line -->
+    <div class="panel-scanline" aria-hidden="true"></div>
+
+  </div><!-- /#info-panel -->
+
+  <!-- ═══════════════════════════════════════════
+       BOTTOM HUD BAR
+  ═══════════════════════════════════════════ -->
+  <div id="bottom-hud">
+
+    <!-- Zoom controls -->
+    <div class="zoom-cluster">
+      <button id="zoom-in" title="Zoom In">+</button>
+      <div class="zoom-track">
+        <div class="zoom-fill" id="zoom-indicator"></div>
+      </div>
+      <button id="zoom-out" title="Zoom Out">−</button>
+    </div>
+
+    <!-- Time speed -->
+    <div class="time-cluster">
+      <span class="hud-label">TIME</span>
+      <input type="range" id="time-speed" min="0" max="20" value="1" step="0.5" />
+      <span id="speed-label" class="accent-text">1×</span>
+    </div>
+
+    <!-- Simulation date -->
+    <div class="date-cluster">
+      <span id="sim-date" class="hud-sim-date"></span>
+      <span id="current-date" class="hud-date"></span>
+    </div>
+
+    <!-- Coordinates -->
+    <div class="coords-cluster">
+      <span id="coord-ra">RA 0.0°</span>
+      <span id="coord-dec">Dec 0.0°</span>
+      <span id="coord-dist">0.0 AU</span>
+    </div>
+
+    <!-- Compass -->
+    <div id="compass" class="compass-mini" title="Compass">
+      <div class="compass-body">
+        <span class="cn">N</span>
+        <div id="compass-needle" class="compass-arrow"></div>
+      </div>
+    </div>
+
+  </div><!-- /#bottom-hud -->
+
+  <!-- ═══════════════════════════════════════════
+       TOOLTIP AND ASSET CREDITS
+  ═══════════════════════════════════════════ -->
+  <div id="tooltip" role="tooltip"></div>
+  <div id="asset-credits">Planet imagery: Solar System Scope / NASA data (CC BY 4.0) · Photographic sky: ESO/S. Brunier (CC BY 4.0) · Live Earth clouds: EUMETSAT/NOAA/JMA via matteason</div>
+
+  <!-- ═══════════════════════════════════════════
+       IMPORT MAP + APP ENTRY
+  ═══════════════════════════════════════════ -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="js/app.js?v=astronaut-8"></script>
+
+</body>
+</html>
