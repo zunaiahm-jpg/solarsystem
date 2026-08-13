@@ -372,7 +372,7 @@ function updateDate() {
   if (scale > 0) {
     // Match the orbital simulation's per-second cadence so the date tracks
     // the planet motion the visitor already sees.
-    simTime += delta * scale;
+    simTime += realDelta * 1000 * scale;
   }
 
   const simDate = new Date(simTime);
