@@ -1,0 +1,576 @@
+/* ════════════════════════════════════════════════════════════
+   PLANET DOSSIER — cinematic world briefing overlay
+   Instrument aesthetic: pure void, hairline rules, wide-tracked
+   thin display type, monospace telemetry. Accent inherited from
+   the app's cyan so it reads as one product.
+════════════════════════════════════════════════════════════ */
+
+.dossier {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  background: #000;
+  color: var(--text-bright);
+  opacity: 0;
+  transition: opacity 620ms cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  font-family: var(--font-head);
+}
+
+.dossier.is-open { opacity: 1; }
+.dossier.is-closing { opacity: 0; }
+body.dossier-open { overflow: hidden; }
+
+#dossier-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Vignette keeps the limb of the planet from touching the frame edge. */
+.dsr-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.72) 100%);
+}
+
+/* ─── Minimal chrome ─────────────────────────────────────── */
+.dsr-chrome {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.dsr-chrome > * { pointer-events: auto; }
+
+.dsr-menu,
+.dsr-version,
+.dsr-social,
+#dsr-close {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--muted-light);
+  text-transform: uppercase;
+}
+
+.dsr-menu {
+  top: 22px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.dsr-menu:hover { color: var(--text-bright); }
+
+.dsr-menu-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dsr-menu-bars i {
+  display: block;
+  width: 14px;
+  height: 1px;
+  background: currentColor;
+}
+
+.dsr-version { top: 22px; right: 24px; }
+
+.dsr-social {
+  bottom: 22px;
+  left: 24px;
+  display: flex;
+  gap: 16px;
+  list-style: none;
+}
+
+.dsr-social a {
+  color: var(--muted-light);
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+
+.dsr-social a:hover { color: var(--accent); }
+
+#dsr-close {
+  bottom: 22px;
+  right: 24px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+#dsr-close:hover { color: var(--text-bright); }
+.dossier.is-intro #dsr-close { display: none; }
+
+/* ─── Stage & phase visibility ───────────────────────────── */
+.dsr-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.dsr-panel {
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 520ms ease, visibility 520ms, transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dossier[data-phase='title'] .dsr-panel--title,
+.dossier[data-phase='stats'] .dsr-panel--stats,
+.dossier[data-phase='ring']  .dsr-panel--ring,
+.dossier[data-phase='layers'] .dsr-panel--layers {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ─── Title card ─────────────────────────────────────────── */
+.dsr-panel--title {
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 18px;
+  transform: translateY(14px);
+}
+
+.dossier[data-phase='title'] .dsr-panel--title { transform: translateY(0); }
+
+#dsr-name {
+  font-size: clamp(2.1rem, 11vw, 6.5rem);
+  font-weight: 200;
+  letter-spacing: 0.38em;
+  text-indent: 0.38em; /* balances the trailing letterspace so it optically centres */
+  line-height: 1;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+#dsr-classification {
+  font-family: var(--font-mono);
+  font-size: clamp(8px, 2.4vw, 11px);
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.dsr-headline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+#dsr-headline {
+  font-family: var(--font-mono);
+  font-size: clamp(0.95rem, 4vw, 1.5rem);
+  letter-spacing: 0.12em;
+  color: var(--text-bright);
+}
+
+#dsr-headline-label,
+.dsr-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+#dsr-blurb {
+  max-width: 34ch;
+  font-size: clamp(0.78rem, 3vw, 0.95rem);
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text);
+  text-wrap: pretty;
+}
+
+/* ─── Data sheet ─────────────────────────────────────────── */
+.dsr-panel--stats {
+  top: 50%;
+  left: clamp(20px, 6vw, 84px);
+  transform: translate(-24px, -50%);
+  width: min(400px, calc(100% - 40px));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dossier[data-phase='stats'] .dsr-panel--stats { transform: translate(0, -50%); }
+
+.dsr-sheet-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dsr-sheet-title {
+  font-size: clamp(1.1rem, 5vw, 1.7rem);
+  font-weight: 200;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+#dsr-stat-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.dsr-stat-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(0, 180, 255, 0.08);
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.dossier[data-phase='stats'] .dsr-stat-row {
+  animation: dsr-row-in 520ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--i) * 45ms + 120ms);
+}
+
+@keyframes dsr-row-in {
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.dsr-stat-key {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted-light);
+  white-space: nowrap;
+}
+
+.dsr-stat-rule {
+  flex: 1;
+  height: 1px;
+  background: repeating-linear-gradient(to right, var(--border) 0 2px, transparent 2px 5px);
+}
+
+.dsr-stat-val {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-bright);
+  white-space: nowrap;
+}
+
+/* ─── Explore CTA ────────────────────────────────────────── */
+#dsr-explore {
+  align-self: flex-start;
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px;
+  background: none;
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius-pill);
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 240ms ease, color 240ms ease, background 240ms ease;
+}
+
+#dsr-explore:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0, 180, 255, 0.06);
+}
+
+#dsr-explore .dsr-chev { transition: transform 240ms ease; }
+#dsr-explore:hover .dsr-chev--l { transform: translateX(-3px); }
+#dsr-explore:hover .dsr-chev--r { transform: translateX(3px); }
+
+/* ─── Hotspot ring ───────────────────────────────────────── */
+.dsr-panel--ring {
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.dsr-dial {
+  position: relative;
+  width: min(78vmin, 640px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  --r: calc(min(78vmin, 640px) / 2);
+}
+
+/* Hairline dial the nodes sit on. */
+.dsr-dial::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(0, 180, 255, 0.16);
+  border-radius: 50%;
+}
+
+.dsr-dial::after {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  border: 1px dashed rgba(0, 180, 255, 0.09);
+  border-radius: 50%;
+  animation: dsr-spin 90s linear infinite;
+}
+
+@keyframes dsr-spin { to { transform: rotate(360deg); } }
+
+.dsr-node {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px;
+  background: rgba(0, 4, 12, 0.55);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transform: rotate(var(--angle)) translate(var(--r)) rotate(calc(-1 * var(--angle))) translate(-50%, -50%);
+  transform-origin: 0 0;
+  opacity: 0;
+  transition: color 200ms ease, border-color 200ms ease, background 200ms ease;
+}
+
+.dossier[data-phase='ring'] .dsr-node {
+  animation: dsr-node-in 460ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--i) * 55ms + 100ms);
+}
+
+@keyframes dsr-node-in { to { opacity: 1; } }
+
+.dsr-node-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--muted);
+  box-shadow: 0 0 0 3px rgba(0, 180, 255, 0.08);
+  transition: background 200ms ease, box-shadow 200ms ease;
+  flex-shrink: 0;
+}
+
+.dsr-node:hover,
+.dsr-node.is-active {
+  color: var(--text-bright);
+  border-color: var(--border-hover);
+  background: rgba(0, 20, 40, 0.8);
+}
+
+.dsr-node.is-active .dsr-node-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(0, 180, 255, 0.2), 0 0 12px var(--accent);
+}
+
+/* Readout sits in the dial's centre, over the planet. */
+.dsr-readout {
+  position: relative;
+  z-index: 2;
+  width: min(30ch, 62%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: radial-gradient(ellipse at center, rgba(0, 2, 8, 0.86) 0%, rgba(0, 2, 8, 0.5) 65%, transparent 100%);
+}
+
+#dsr-readout-title {
+  font-size: clamp(0.85rem, 3.4vw, 1.15rem);
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+#dsr-readout-text {
+  font-size: clamp(0.72rem, 2.7vw, 0.85rem);
+  font-weight: 300;
+  line-height: 1.65;
+  color: var(--text);
+  text-wrap: pretty;
+}
+
+.dsr-readout.is-swap { animation: dsr-swap 380ms ease; }
+
+@keyframes dsr-swap {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Interior layers ────────────────────────────────────── */
+.dsr-panel--layers { inset: 0; }
+
+#dsr-layer-list {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Each callout is pinned to a projected point on the cutaway face and
+   extends a leader line back toward the geometry it names. */
+.dsr-layer-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(calc(var(--x, 0px) - 100%), calc(var(--y, 0px) - 50%)) translateX(-14px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  text-align: right;
+  opacity: 0;
+  white-space: nowrap;
+}
+
+.dossier[data-phase='layers'] .dsr-layer-label {
+  animation: dsr-node-in 520ms ease forwards;
+  animation-delay: calc(var(--i) * 90ms + 260ms);
+}
+
+.dsr-layer-label::after {
+  content: '';
+  position: absolute;
+  right: -14px;
+  top: 50%;
+  width: 12px;
+  height: 1px;
+  background: var(--border-hover);
+}
+
+.dsr-layer-name {
+  font-size: clamp(0.72rem, 2.6vw, 0.92rem);
+  font-weight: 300;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.dsr-layer-detail {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+
+/* ─── Phase stepper ──────────────────────────────────────── */
+.dsr-steps {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  background: rgba(0, 4, 12, 0.7);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  backdrop-filter: var(--blur);
+}
+
+.dsr-steps button {
+  padding: 7px 14px;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-pill);
+  color: var(--muted-light);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 200ms ease, background 200ms ease;
+}
+
+.dsr-steps button:hover { color: var(--text-bright); }
+
+.dsr-steps button.is-active {
+  color: #001018;
+  background: var(--accent);
+}
+
+/* Intro mode is a landing, not a briefing: hide the deeper phases. */
+.dossier.is-intro .dsr-steps { display: none; }
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .dsr-menu, .dsr-version { top: 14px; }
+  .dsr-menu { left: 14px; }
+  .dsr-version { right: 14px; }
+  .dsr-social { bottom: 60px; left: 14px; gap: 12px; }
+  #dsr-close { bottom: 60px; right: 14px; }
+
+  .dsr-panel--stats {
+    top: auto;
+    bottom: 84px;
+    left: 14px;
+    right: 14px;
+    width: auto;
+    transform: translate(0, 14px);
+    max-height: 62vh;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .dossier[data-phase='stats'] .dsr-panel--stats { transform: translate(0, 0); }
+
+  .dsr-dial { width: 92vmin; --r: calc(92vmin / 2); }
+  .dsr-node { font-size: 7.5px; padding: 4px 7px; gap: 5px; letter-spacing: 0.1em; }
+  .dsr-node-dot { width: 4px; height: 4px; }
+  .dsr-readout { width: min(26ch, 74%); padding: 10px; }
+
+  .dsr-steps { bottom: 14px; gap: 2px; padding: 4px; }
+  .dsr-steps button { padding: 6px 10px; font-size: 8px; letter-spacing: 0.14em; }
+
+  .dsr-layer-label { transform: translate(calc(var(--x, 0px) - 100%), calc(var(--y, 0px) - 50%)) translateX(-9px); }
+  .dsr-layer-label::after { right: -9px; width: 7px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dossier, .dsr-panel, .dsr-stat-row, .dsr-node, .dsr-layer-label, .dsr-readout {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+  .dsr-dial::after { animation: none; }
+}
