@@ -63,6 +63,12 @@ const sessionFacts = {
   inputs: []
 };
 
+// Single source of truth for the session request, so the "what did the runtime
+// actually grant?" audit below can never drift out of sync with what we asked
+// for. All are optional: a runtime that rejects the whole list still gives us a
+// working session, just without floor tracking or hands.
+const REQUESTED_FEATURES = ['local-floor', 'bounded-floor', 'hand-tracking', 'layers'];
+
 const controllers = [];
 const raycaster = new THREE.Raycaster();
 const tempMatrix = new THREE.Matrix4();
@@ -521,6 +527,18 @@ function handleSessionStart() {
     }
     sessionFacts.frameRate = sessionFacts.frameRate || session.frameRate || null;
     sessionFacts.inputs = describeInputs();
+
+    // `enabledFeatures` is the runtime's own answer to "what did you actually
+    // grant?", which is often a strict subset of what we asked for — a Quest
+    // without hand tracking enabled in settings silently drops 'hand-tracking'.
+    // Requested-vs-granted is invisible from the desktop, so surface it.
+    sessionFacts.requestedFeatures = session.enabledFeatures
+      ? Array.from(session.enabledFeatures)
+      : [];
+    if (session.enabledFeatures) {
+      const missing = REQUESTED_FEATURES.filter((f) => !sessionFacts.requestedFeatures.includes(f));
+      if (missing.length) note(`Runtime declined: ${missing.join(', ')}`);
+    }
 
     // Controllers are frequently powered on, or handed over from hand
     // tracking, after the session has already begun.

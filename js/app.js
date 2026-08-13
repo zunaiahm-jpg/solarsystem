@@ -9,7 +9,8 @@ import { setupVR, updateVR, isPresenting } from './vr.js?v=astronaut-8';
 
 import {
   createStarField, createFamousStars, createConstellations,
-  updateStars, setStarsVisible, setConstellationsVisible, starObjects
+  updateStars, setStarsVisible, setConstellationsVisible, starObjects,
+  getSkyStatus
 } from './stars.js?v=astronaut-8';
 import {
   createSolarSystem, updateSolarSystem, updateOrbitResolution, solarSystemObjects,
@@ -99,6 +100,9 @@ setupVR({
   camera,
   controls,
   getTargets: () => allClickable,
+  // Feeds the in-VR diagnostics overlay the live sky-plate tier, so a headset
+  // user can confirm the 8K plate actually loaded without leaving the session.
+  getSkyStatus,
   onSelect: (mesh) => {
     selectObject(mesh);
     showInfoPanel(mesh);

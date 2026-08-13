@@ -398,7 +398,7 @@ function updateDate() {
     const liveTime = live.toLocaleTimeString(undefined, {
       hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short'
     });
-    el.textContent = `LIVE ${liveDate} · ${liveTime}`;
+    el.textContent = `${liveDate} · ${liveTime}`;
   }
 }
 
