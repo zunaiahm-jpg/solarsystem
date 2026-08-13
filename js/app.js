@@ -3,7 +3,6 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 import { setupVR, updateVR, isPresenting } from './vr.js?v=astronaut-8';
@@ -65,12 +64,9 @@ const bloomPass = new UnrealBloomPass(
 );
 composer.addPass(bloomPass);
 
-// Subtle photographic film grain + vignette — adds a cinematic VFX finish
-// without crushing detail. Disabled on low-power devices for performance.
-if (!lowPowerDevice) {
-  const filmPass = new FilmPass(0.18, false);
-  composer.addPass(filmPass);
-}
+// No film-grain pass. Animated grain over a black sky is indistinguishable
+// from television static, and it was the single largest source of the crawling
+// speckle across the star field. Real space has no grain.
 composer.addPass(new OutputPass());
 
 // ─── Clock ────────────────────────────────────────────────────────────────────
