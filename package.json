@@ -1,0 +1,13 @@
+{
+  "name": "solarsystem",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Static WebGL solar system explorer (Three.js via CDN import map)",
+  "scripts": {
+    "dev": "serve . -l 3000 --no-clipboard",
+    "start": "serve . -l 3000 --no-clipboard"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
