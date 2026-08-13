@@ -187,21 +187,18 @@ export function createStarField(scene, renderer) {
   proceduralStarGroup = createHumanEyeStars();
   starEnvironment.add(proceduralStarGroup);
 
-  new THREE.TextureLoader().load(
-    './assets/sky/starmap-nasa-8k.jpg',
-    texture => {
-      texture.colorSpace = THREE.NoColorSpace;
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.ClampToEdgeWrapping;
-      texture.minFilter = THREE.LinearMipmapLinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-      texture.generateMipmaps = true;
-      // Conservative anisotropy preserves detail without overspending Quest GPU time.
-      if (renderer) texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  // loadSky escalates 4K → 8K → optional video, calling onTexture once per tier
+  // that succeeds. It applies its own mipmap/anisotropy filtering and never
+  // rejects, so the sky simply keeps whatever tier last loaded.
+  loadSky({
+    renderer,
+    onTexture: (texture, tier) => {
       skyMaterial.uniforms.uSky.value = texture;
-      window._spaceSkyResolution = '8192×4096';
-      window._spaceSkyReady = true;
-      window.dispatchEvent(new Event('space-sky-ready'));
+      window._spaceSkyResolution = `${tier.width}×${tier.width / 2}`;
+      if (!window._spaceSkyReady) {
+        window._spaceSkyReady = true;
+        window.dispatchEvent(new Event('space-sky-ready'));
+      }
     },
     onStatus: (status) => {
       window._spaceSkyStatus = status;
