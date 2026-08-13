@@ -187,19 +187,17 @@ export function createStarField(scene, renderer) {
   proceduralStarGroup = createHumanEyeStars();
   starEnvironment.add(proceduralStarGroup);
 
-  new THREE.TextureLoader().load(
-    './assets/sky/starmap-nasa-8k.jpg',
-    texture => {
-      texture.colorSpace = THREE.NoColorSpace;
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.ClampToEdgeWrapping;
-      texture.minFilter = THREE.LinearMipmapLinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-      texture.generateMipmaps = true;
+  loadSky({
+    renderer,
+    onTexture: (texture, tier) => {
       // Conservative anisotropy preserves detail without overspending Quest GPU time.
-      if (renderer) texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+      if (renderer && texture.isVideoTexture !== true) {
+        texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+      }
+      const previous = skyMaterial.uniforms.uSky.value;
       skyMaterial.uniforms.uSky.value = texture;
-      window._spaceSkyResolution = '8192×4096';
+      if (previous && previous !== texture && previous.dispose) previous.dispose();
+      window._spaceSkyResolution = `${tier.width}×${tier.width / 2}`;
       window._spaceSkyReady = true;
       window.dispatchEvent(new Event('space-sky-ready'));
     },
