@@ -78,6 +78,8 @@ function startLoadingSequence(onLoaded) {
     if (finished) return;
     finished = true;
     setProgress(1, 'Visual systems online');
+    const minimumDisplayTime = 1800;
+    const remainingDisplayTime = Math.max(350, minimumDisplayTime - (performance.now() - startedAt));
     setTimeout(() => {
       if (!screen) return;
       screen.style.opacity = '0';
@@ -86,7 +88,7 @@ function startLoadingSequence(onLoaded) {
         screen.style.display = 'none';
         if (onLoaded) onLoaded();
       }, 800);
-    }, 350);
+    }, remainingDisplayTime);
   };
 
   const maybeFinish = () => {
