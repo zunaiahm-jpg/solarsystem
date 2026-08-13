@@ -37,46 +37,48 @@
 
   <main id="launch-landing" class="launch-landing" aria-labelledby="launch-title">
     <nav class="launch-nav" aria-label="Primary navigation">
-      <a class="launch-brand" href="#" aria-label="Odyssey home"><span>ODYSSEY</span><small>Beyond Earth</small></a>
-      <div class="launch-nav-links" aria-hidden="true"><span>Mission</span><span>Universe</span><span>Experience</span></div>
-      <button class="launch-nav-cta" type="button" data-open-explore>Begin journey</button>
-    </nav>
-    <section class="launch-hero">
-      <p class="launch-kicker">Interactive orbital experience · 8K celestial field</p>
-      <h1 id="launch-title">Leave the familiar.<br><span>Enter the infinite.</span></h1>
-      <p class="launch-copy">A live, explorable passage from Earth into the solar system—built for the web and ready for immersive VR.</p>
-      <div class="launch-actions">
-        <button id="explore-launch" class="launch-primary" type="button" data-open-explore>Explore space <span aria-hidden="true">↗</span></button>
-        <button id="skip-launch" class="launch-secondary" type="button">Enter without sharing</button>
+      <a class="launch-brand" href="#launch-landing" aria-label="SpaceTrekk home">
+        <span class="launch-brand-mark" aria-hidden="true"></span>
+        <span class="launch-brand-copy"><strong>SPACETREKK</strong><small>Solar atlas / 2026</small></span>
+      </a>
+      <div class="launch-nav-status" aria-label="System status">
+        <span class="launch-status-dot" aria-hidden="true"></span>
+        <span>Simulation online</span>
       </div>
-      <div class="launch-proof"><span><b>8K</b> NASA sky</span><span><b>LIVE</b> Earth clouds</span><span><b>VR</b> Quest ready</span></div>
-    </section>
-    <p class="launch-orbit-label" aria-hidden="true">EARTH · 12,742 KM</p>
-  </main>
+      <button class="launch-nav-cta" type="button" data-enter-experience>Open atlas</button>
+    </nav>
 
-  <div id="explore-dialog" class="explore-dialog" role="dialog" aria-modal="true" aria-labelledby="explore-title" hidden>
-    <div class="explore-backdrop" data-close-explore></div>
-    <section class="explore-panel">
-      <button class="explore-close" type="button" aria-label="Close form" data-close-explore>×</button>
-      <p class="launch-kicker">Transmission 001</p>
-      <h2 id="explore-title">Before we leave Earth</h2>
-      <p>Tell us who is joining the mission. Your response helps shape what this universe becomes.</p>
-      <form id="explore-form">
-        <input class="form-trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
-        <div class="explore-grid">
-          <label>Name<input name="name" maxlength="120" autocomplete="name" required /></label>
-          <label>Email<input name="email" type="email" maxlength="254" autocomplete="email" required /></label>
+    <section class="launch-hero">
+      <div class="launch-index" aria-hidden="true">
+        <span>01</span>
+        <span class="launch-index-line"></span>
+        <span>08</span>
+      </div>
+      <div class="launch-content">
+        <p class="launch-kicker"><span>Live orbital simulation</span><span>Sol / Milky Way</span></p>
+        <h1 id="launch-title">Journey through<br><em>our solar system.</em></h1>
+        <div class="launch-intro">
+          <p class="launch-copy">Navigate the planets, follow their paths, and experience our celestial neighborhood in a real-time three-dimensional atlas.</p>
+          <button id="explore-launch" class="launch-primary" type="button" data-enter-experience>
+            <span class="launch-button-icon" aria-hidden="true">→</span>
+            <span>Explore Solar System</span>
+          </button>
         </div>
-        <label>Country<input name="country" maxlength="100" autocomplete="country-name" required /></label>
-        <label>What do you think about space and the universe?<textarea name="thoughts" maxlength="2000" rows="4" required></textarea></label>
-        <p id="explore-status" class="explore-status" role="status" aria-live="polite"></p>
-        <div class="explore-submit-row">
-          <button class="launch-primary" type="submit">Share & explore</button>
-          <button class="launch-secondary" type="button" id="form-skip">Skip for now</button>
-        </div>
-      </form>
+      </div>
     </section>
-  </div>
+
+    <footer class="launch-footer">
+      <div class="launch-coordinate"><span>Current focus</span><strong>Earth · 1.00 AU</strong></div>
+      <div class="launch-readouts" aria-label="Experience details">
+        <span><b>08</b> planets</span>
+        <span><b>LIVE</b> ephemeris</span>
+        <span><b>3D</b> spatial atlas</span>
+      </div>
+      <p class="launch-scroll-cue" aria-hidden="true">Drag to orbit after launch</p>
+    </footer>
+    <div class="launch-orbit launch-orbit-one" aria-hidden="true"></div>
+    <div class="launch-orbit launch-orbit-two" aria-hidden="true"></div>
+  </main>
 
   <!-- ═══════════════════════════════════════════
        TOP HUD BAR
