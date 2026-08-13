@@ -35,6 +35,49 @@
   ═══════════════════════════════════════════ -->
   <canvas id="space-canvas"></canvas>
 
+  <main id="launch-landing" class="launch-landing" aria-labelledby="launch-title">
+    <nav class="launch-nav" aria-label="Primary navigation">
+      <a class="launch-brand" href="#" aria-label="Odyssey home"><span>ODYSSEY</span><small>Beyond Earth</small></a>
+      <div class="launch-nav-links" aria-hidden="true"><span>Mission</span><span>Universe</span><span>Experience</span></div>
+      <button class="launch-nav-cta" type="button" data-open-explore>Begin journey</button>
+    </nav>
+    <section class="launch-hero">
+      <p class="launch-kicker">Interactive orbital experience · 8K celestial field</p>
+      <h1 id="launch-title">Leave the familiar.<br><span>Enter the infinite.</span></h1>
+      <p class="launch-copy">A live, explorable passage from Earth into the solar system—built for the web and ready for immersive VR.</p>
+      <div class="launch-actions">
+        <button id="explore-launch" class="launch-primary" type="button" data-open-explore>Explore space <span aria-hidden="true">↗</span></button>
+        <button id="skip-launch" class="launch-secondary" type="button">Enter without sharing</button>
+      </div>
+      <div class="launch-proof"><span><b>8K</b> NASA sky</span><span><b>LIVE</b> Earth clouds</span><span><b>VR</b> Quest ready</span></div>
+    </section>
+    <p class="launch-orbit-label" aria-hidden="true">EARTH · 12,742 KM</p>
+  </main>
+
+  <div id="explore-dialog" class="explore-dialog" role="dialog" aria-modal="true" aria-labelledby="explore-title" hidden>
+    <div class="explore-backdrop" data-close-explore></div>
+    <section class="explore-panel">
+      <button class="explore-close" type="button" aria-label="Close form" data-close-explore>×</button>
+      <p class="launch-kicker">Transmission 001</p>
+      <h2 id="explore-title">Before we leave Earth</h2>
+      <p>Tell us who is joining the mission. Your response helps shape what this universe becomes.</p>
+      <form id="explore-form">
+        <input class="form-trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <div class="explore-grid">
+          <label>Name<input name="name" maxlength="120" autocomplete="name" required /></label>
+          <label>Email<input name="email" type="email" maxlength="254" autocomplete="email" required /></label>
+        </div>
+        <label>Country<input name="country" maxlength="100" autocomplete="country-name" required /></label>
+        <label>What do you think about space and the universe?<textarea name="thoughts" maxlength="2000" rows="4" required></textarea></label>
+        <p id="explore-status" class="explore-status" role="status" aria-live="polite"></p>
+        <div class="explore-submit-row">
+          <button class="launch-primary" type="submit">Share & explore</button>
+          <button class="launch-secondary" type="button" id="form-skip">Skip for now</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
   <!-- ═══════════════════════════════════════════
        TOP HUD BAR
   ═══════════════════════════════════════════ -->
@@ -68,10 +111,9 @@
 
     <!-- Right controls -->
     <div class="top-right">
-      <div class="live-quality" title="Live Earth cloud imagery updated daily by EUMETSAT/NOAA. Sky panorama: ESO/S. Brunier.">
+      <div class="live-quality" title="Live Earth cloud imagery updated daily by EUMETSAT/NOAA. 8K sky panorama: NASA/Goddard Space Flight Center.">
         <span class="live-dot"></span>
         <span>LIVE</span>
-        <strong>ESO PHOTO SKY · LIVE CLOUDS</strong>
       </div>
       <button class="hud-btn" id="btn-solar-system" title="Solar System View">⊙</button>
       <button class="hud-btn" id="btn-galaxy" title="Wide View">✦</button>
@@ -295,7 +337,7 @@
        TOOLTIP AND ASSET CREDITS
   ═══════════════════════════════════════════ -->
   <div id="tooltip" role="tooltip"></div>
-  <div id="asset-credits">Planet imagery: Solar System Scope / NASA data (CC BY 4.0) · Photographic sky: ESO/S. Brunier (CC BY 4.0) · Live Earth clouds: EUMETSAT/NOAA/JMA via matteason</div>
+  <div id="asset-credits">Planet imagery: Solar System Scope / NASA data (CC BY 4.0) · 8K photographic sky: NASA/Goddard Space Flight Center · Live Earth clouds: EUMETSAT/NOAA/JMA via matteason</div>
 
   <!-- ═══════════════════════════════════════════
        IMPORT MAP + APP ENTRY
@@ -309,6 +351,7 @@
   }
   </script>
   <script type="module" src="js/app.js?v=astronaut-8"></script>
+  <script src="js/launch.js?v=launch-1" defer></script>
 
 </body>
 </html>
