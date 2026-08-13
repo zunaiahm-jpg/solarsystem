@@ -6,7 +6,8 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
-import { setupVR, updateVR, isPresenting } from './vr.js?v=astronaut-8';
+import { setupVR, updateVR, isPresenting, setSurfaceMode } from './vr.js?v=surface-2';
+import { PlanetarySurfaces } from './planetarySurfaces.js?v=surface-2';
 
 import {
   createStarField, createFamousStars, createConstellations,
@@ -22,8 +23,8 @@ import { createLabels, updateLabels, setLabelsVisible } from './labels.js?v=astr
 import {
   setupUI, showInfoPanel, closeInfoPanel, showTooltip, hideTooltip,
   updateCoordinates, updateZoomLevel, updateCompass, setupViewButtons,
-  highlightSidebarPlanet, clearSidebarHighlight
-} from './ui.js?v=astronaut-8';
+  highlightSidebarPlanet, clearSidebarHighlight, updateSurfaceStatus
+} from './ui.js?v=surface-2';
 
 // ─── Renderer ───────────────────────────────────────────────────────────────
 const canvas = document.getElementById('space-canvas');
@@ -92,6 +93,22 @@ requestAnimationFrame(() => {
   allClickable = [...solarSystemObjects, ...starObjects, ...nebulaObjects];
   createLabels(scene, allClickable);
 });
+
+const surfaces = new PlanetarySurfaces({
+  scene,
+  camera,
+  controls,
+  renderer,
+  onStateChange: state => {
+    updateSurfaceStatus(state);
+    setSurfaceMode(state.active, state.body);
+    if (state.phase === 'surface') {
+      followedMesh = null;
+      followLastPosition = null;
+    }
+  }
+});
+updateSurfaceStatus({ quality: surfaces.quality, phase: 'orbit' });
 
 // ─── Immersive VR ────────────────────────────────────────────────────────────
 // The headset user is placed on a camera rig (see js/vr.js) so they arrive in
@@ -229,6 +246,9 @@ setupUI({
   flyToCallback: flyToObjectId,
   sidebarSelectCallback: null, // sidebar already flies via flyToCallback
   selectCallback: (mesh) => selectMesh(mesh),
+  surfaceSupported: object => surfaces.supports(object),
+  onLandSurface: object => surfaces.land(object),
+  onReturnOrbit: () => surfaces.returnToOrbit(),
   onLoaded: () => { /* scene already built */ }
 });
 
@@ -275,14 +295,15 @@ function animate() {
     if (flyLook) controls.target.lerp(flyLook, t * 0.4);
   }
 
-  // Update systems
-  updateSolarSystem(elapsed, timeScale);
+  // Update systems. Orbital motion pauses while the visitor is standing on a world.
+  updateSolarSystem(elapsed, surfaces.isActive() ? 0 : timeScale);
+  surfaces.update(delta);
   updateStars(elapsed);
   updateNebulae(elapsed);
   updateLabels(camera);
 
   // Camera follows the selected object as it orbits (once fly-in has settled)
-  if (!inVR && followedMesh && flyT >= 1) {
+  if (!inVR && !surfaces.isActive() && followedMesh && flyT >= 1) {
     const wp = new THREE.Vector3();
     followedMesh.getWorldPosition(wp);
     if (followLastPosition) {

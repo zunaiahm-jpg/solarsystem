@@ -6,12 +6,18 @@ let camera, controls;
 let onFlyTo = null;
 let selectedObject = null;
 let timeScale = 1;
+let onLandSurface = null;
+let onReturnOrbit = null;
+let surfaceSupported = () => false;
 
 // ---- Setup ----
 export function setupUI(opts) {
   camera = opts.camera;
   controls = opts.controls;
   onFlyTo = opts.flyToCallback;
+  onLandSurface = opts.onLandSurface;
+  onReturnOrbit = opts.onReturnOrbit;
+  surfaceSupported = opts.surfaceSupported || surfaceSupported;
 
   setupSearch();
   setupLayerToggles(opts.layerCallbacks);
@@ -20,6 +26,8 @@ export function setupUI(opts) {
   setupInfoPanel();
   setupBottomBar();
   setupPlanetSidebar(opts.flyToCallback, opts.sidebarSelectCallback);
+  setupSurfaceControls();
+  setupStackPanel();
   startLoadingSequence(opts.onLoaded);
   loadLatestNews().then(() => renderNewsFeed(3));
 }
@@ -180,6 +188,7 @@ function setupSearch() {
   input.addEventListener('input', renderResults);
   input.addEventListener('keydown', event => {
     if (event.key === 'Enter') {
+      if (event.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       activateBestMatch();
     } else if (event.key === 'Escape') {
@@ -239,6 +248,51 @@ function setupTimeControl() {
   window._spaceMapTimeScale = 1;
 }
 
+// ---- Surface exploration ----
+function setupSurfaceControls() {
+  document.getElementById('btn-land')?.addEventListener('click', () => {
+    if (selectedObject && onLandSurface) onLandSurface(selectedObject);
+  });
+  document.getElementById('btn-return-orbit')?.addEventListener('click', () => onReturnOrbit?.());
+}
+
+function setupStackPanel() {
+  const toggle = document.getElementById('stack-toggle');
+  const panel = document.getElementById('stack-panel');
+  const close = document.getElementById('stack-close');
+  const setOpen = (open) => {
+    if (!toggle || !panel) return;
+    panel.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    document.getElementById('open-source-stack')?.classList.toggle('is-open', open);
+  };
+  toggle?.addEventListener('click', () => setOpen(panel?.hidden));
+  close?.addEventListener('click', () => setOpen(false));
+}
+
+export function updateSurfaceStatus(state = {}) {
+  const section = document.getElementById('surface-explorer');
+  if (!section) return;
+  const active = !!state.active;
+  const progressWrap = document.getElementById('surface-progress-wrap');
+  const land = document.getElementById('btn-land');
+  const back = document.getElementById('btn-return-orbit');
+  section.classList.toggle('is-active', active);
+  if (land) land.hidden = active;
+  if (back) back.hidden = !active;
+  if (progressWrap) progressWrap.hidden = !active && !state.message;
+  const quality = document.getElementById('surface-quality');
+  const source = document.getElementById('surface-source');
+  const badge = document.getElementById('surface-availability');
+  const message = document.getElementById('surface-message');
+  const bar = document.getElementById('surface-progress');
+  if (quality && state.quality) quality.textContent = state.quality;
+  if (source && state.source) source.textContent = state.source;
+  if (message && state.message) message.textContent = state.message;
+  if (bar) bar.style.width = `${Math.round((state.progress || 0) * 100)}%`;
+  if (badge) badge.textContent = state.phase === 'surface' ? 'LANDED' : state.phase === 'orbit' ? 'READY' : String(state.phase || 'READY').toUpperCase();
+}
+
 // ---- Info panel ----
 function setupInfoPanel() {
   document.getElementById('info-close')?.addEventListener('click', closeInfoPanel);
@@ -264,6 +318,16 @@ export function showInfoPanel(obj) {
   document.getElementById('info-name').textContent = data.name || 'Unknown';
   document.getElementById('info-type').textContent = data.type || '';
   document.getElementById('info-description').textContent = data.description || '';
+
+  const surfaceSection = document.getElementById('surface-explorer');
+  if (surfaceSection) {
+    const supported = surfaceSupported(obj);
+    surfaceSection.classList.toggle('hidden', !supported);
+    if (supported) {
+      const summary = document.getElementById('surface-summary');
+      if (summary) summary.textContent = `Descend to ${data.name} with adaptive high-resolution terrain and WebXR-ready navigation.`;
+    }
+  }
 
   const statsEl = document.getElementById('info-stats');
   statsEl.innerHTML = '';
