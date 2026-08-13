@@ -31,6 +31,7 @@ const ARRIVAL_DURATION = 4.5;
 let renderer, scene, camera, controls;
 let getTargets = () => [];
 let onSelect = () => {};
+let getSkyStatus = () => null;
 
 let rig = null;
 let presenting = false;
@@ -38,6 +39,29 @@ let vignette = null;
 let wristPanel = null;
 let wristCtx = null;
 let wristTexture = null;
+
+// ─── Diagnostics ─────────────────────────────────────────────────────────────
+// A headset user cannot see the DOM, the console, or any error toast. When the
+// experience misbehaves on real hardware the only way to find out why is to
+// draw the runtime's own report inside the scene.
+let diagPanel = null;
+let diagCtx = null;
+let diagTexture = null;
+let diagVisible = false;
+let diagArmed = true;
+let diagRepaintIn = 0;
+let frameCount = 0;
+let frameWindow = 0;
+let measuredFps = 0;
+const diagLog = [];
+const sessionFacts = {
+  referenceSpace: 'pending',
+  requestedFeatures: [],
+  frameRate: null,
+  supportedFrameRates: null,
+  foveation: null,
+  inputs: []
+};
 
 const controllers = [];
 const raycaster = new THREE.Raycaster();
@@ -86,9 +110,15 @@ export function setupVR(options) {
   controls = options.controls;
   getTargets = options.getTargets || getTargets;
   onSelect = options.onSelect || onSelect;
+  getSkyStatus = options.getSkyStatus || getSkyStatus;
 
   renderer.xr.enabled = true;
   renderer.xr.setReferenceSpaceType('local-floor');
+  // Explicit 1.0 keeps the eye buffers at the runtime's own recommended
+  // resolution. The desktop pixel ratio must never leak into the headset.
+  if (typeof renderer.xr.setFramebufferScaleFactor === 'function') {
+    renderer.xr.setFramebufferScaleFactor(1.0);
+  }
 
   rig = new THREE.Group();
   rig.name = 'xr-rig';
@@ -98,6 +128,7 @@ export function setupVR(options) {
   buildControllers();
   buildVignette();
   buildWristPanel();
+  buildDiagPanel();
 
   renderer.xr.addEventListener('sessionstart', handleSessionStart);
   renderer.xr.addEventListener('sessionend', handleSessionEnd);
@@ -163,7 +194,13 @@ function buildControllers() {
       controller.visible = false;
     });
 
-    controller.addEventListener('selectstart', () => handleTrigger(controller));
+    controller.addEventListener('selectstart', () => {
+      controller.userData.selecting = true;
+      handleTrigger(controller);
+    });
+    controller.addEventListener('selectend', () => {
+      controller.userData.selecting = false;
+    });
     controller.addEventListener('squeezestart', () => warpToSelection());
 
     rig.add(controller);
@@ -254,7 +291,7 @@ function drawWristPanel() {
 
   ctx.fillStyle = 'rgba(140, 170, 200, 0.7)';
   ctx.font = '400 22px "Share Tech Mono", monospace';
-  ctx.fillText('STICK fly · GRIP boost · SQUEEZE warp', 30, h - 34);
+  ctx.fillText('STICK fly · GRIP warp · A/X report', 30, h - 34);
 
   wristTexture.needsUpdate = true;
 }
@@ -292,6 +329,174 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   if (line) ctx.fillText(line, x, cursorY);
 }
 
+// ─── In-VR diagnostics overlay ───────────────────────────────────────────────
+
+function buildDiagPanel() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 900;
+  canvas.height = 640;
+  diagCtx = canvas.getContext('2d');
+  diagTexture = new THREE.CanvasTexture(canvas);
+  diagTexture.anisotropy = 4;
+
+  diagPanel = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.62, 0.44),
+    new THREE.MeshBasicMaterial({ map: diagTexture, transparent: true, depthTest: false })
+  );
+  // Roughly an arm's length ahead, below the natural line of sight so it never
+  // covers the scene while flying.
+  diagPanel.position.set(0, -0.16, -0.85);
+  diagPanel.rotation.x = 0.22;
+  diagPanel.renderOrder = 998;
+  diagPanel.frustumCulled = false;
+  diagPanel.visible = false;
+  camera.add(diagPanel);
+}
+
+function note(message) {
+  diagLog.unshift(message);
+  if (diagLog.length > 4) diagLog.length = 4;
+}
+
+function describeInputs() {
+  const session = renderer?.xr?.getSession?.();
+  if (!session) return [];
+  return Array.from(session.inputSources).map((source) => {
+    const profile = (source.profiles && source.profiles[0]) || 'unknown';
+    const kind = source.hand ? 'hand' : source.gamepad ? 'gamepad' : source.targetRayMode;
+    return `${source.handedness}: ${profile.slice(0, 26)} (${kind})`;
+  });
+}
+
+function collectDiagnostics() {
+  const session = renderer?.xr?.getSession?.();
+  const gl = renderer?.getContext?.();
+  const sky = getSkyStatus() || {};
+  const xrCamera = presenting ? renderer.xr.getCamera() : null;
+  const eyes = xrCamera && xrCamera.cameras ? xrCamera.cameras.length : 0;
+  const baseLayer = session?.renderState?.baseLayer;
+
+  const rows = [
+    ['Session', session ? `immersive-vr · ${eyes} eye${eyes === 1 ? '' : 's'}` : 'none', !!session],
+    ['Reference space', sessionFacts.referenceSpace, sessionFacts.referenceSpace === 'local-floor'],
+    [
+      'Frame rate',
+      `${measuredFps.toFixed(0)} fps drawn${sessionFacts.frameRate ? ` · ${Math.round(sessionFacts.frameRate)} Hz target` : ''}`,
+      measuredFps >= 60
+    ],
+    [
+      'Eye buffer',
+      baseLayer ? `${baseLayer.framebufferWidth}×${baseLayer.framebufferHeight} per eye` : 'n/a',
+      !!baseLayer
+    ],
+    [
+      'Foveation',
+      sessionFacts.foveation === null ? 'unsupported' : String(sessionFacts.foveation),
+      sessionFacts.foveation !== null
+    ],
+    ['Input', describeInputs().join('  |  ') || 'no controllers reported', controllers.some((c) => c.userData.gamepad)],
+    [
+      'Sky plate',
+      `${sky.tier || 'loading'}${sky.width ? ` · ${sky.width}px` : ''}${sky.animated ? ' · video' : ' · still'}`,
+      (sky.width || 0) >= 8192
+    ],
+    ['Video plate', sky.videoRejectedBecause ? `off — ${sky.videoRejectedBecause}` : 'active', !sky.videoRejectedBecause],
+    ['GPU max texture', gl ? `${gl.getParameter(gl.MAX_TEXTURE_SIZE)}px` : 'unknown', true],
+    [
+      'Rig',
+      `x ${rig.position.x.toFixed(0)}  y ${rig.position.y.toFixed(0)}  z ${rig.position.z.toFixed(0)}`,
+      rig.position.length() > 3
+    ],
+    ['Near / far', `${camera.near} / ${camera.far}`, camera.near >= 0.1]
+  ];
+  return rows;
+}
+
+function drawDiagPanel() {
+  if (!diagCtx) return;
+  const ctx = diagCtx;
+  const w = ctx.canvas.width;
+  const h = ctx.canvas.height;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = 'rgba(4, 10, 26, 0.92)';
+  roundRect(ctx, 6, 6, w - 12, h - 12, 22);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0, 212, 255, 0.5)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(0, 212, 255, 0.85)';
+  ctx.font = '600 30px Rajdhani, sans-serif';
+  ctx.fillText('HEADSET DIAGNOSTICS', 38, 60);
+  ctx.fillStyle = 'rgba(150, 178, 208, 0.7)';
+  ctx.font = '400 22px "Share Tech Mono", monospace';
+  ctx.fillText('A / X button toggles', w - 300, 60);
+
+  let y = 112;
+  for (const [label, value, ok] of collectDiagnostics()) {
+    ctx.fillStyle = ok ? 'rgba(127, 255, 212, 0.95)' : 'rgba(255, 176, 92, 0.95)';
+    ctx.font = '400 24px "Share Tech Mono", monospace';
+    ctx.fillText(ok ? '●' : '▲', 38, y);
+
+    ctx.fillStyle = 'rgba(168, 194, 220, 0.9)';
+    ctx.fillText(label, 70, y);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(truncate(ctx, String(value), w - 400), 330, y);
+    y += 38;
+  }
+
+  if (diagLog.length) {
+    ctx.fillStyle = 'rgba(150, 178, 208, 0.65)';
+    ctx.font = '400 21px "Share Tech Mono", monospace';
+    ctx.fillText(truncate(ctx, diagLog[0], w - 90), 38, h - 34);
+  }
+
+  diagTexture.needsUpdate = true;
+}
+
+function setDiagVisible(visible) {
+  diagVisible = visible;
+  if (diagPanel) diagPanel.visible = visible;
+  if (visible) {
+    diagRepaintIn = 0;
+    drawDiagPanel();
+  }
+}
+
+/** A/X on either controller toggles the report. */
+function updateDiagToggle(step) {
+  let pressed = false;
+  for (const controller of controllers) {
+    const pad = controller.userData.gamepad;
+    if (pad && pad.buttons && pad.buttons[4] && pad.buttons[4].pressed) pressed = true;
+  }
+  if (pressed && diagArmed) {
+    setDiagVisible(!diagVisible);
+    diagArmed = false;
+  } else if (!pressed) {
+    diagArmed = true;
+  }
+
+  if (!diagVisible) return;
+  diagRepaintIn -= step;
+  if (diagRepaintIn <= 0) {
+    diagRepaintIn = 0.5;
+    drawDiagPanel();
+  }
+}
+
+function updateFrameRate(step) {
+  frameCount++;
+  frameWindow += step;
+  if (frameWindow >= 0.5) {
+    measuredFps = frameCount / frameWindow;
+    frameCount = 0;
+    frameWindow = 0;
+  }
+}
+
 // ─── Session lifecycle ───────────────────────────────────────────────────────
 
 function handleSessionStart() {
@@ -305,11 +510,41 @@ function handleSessionStart() {
   camera.updateProjectionMatrix();
 
   // Peripheral foveation buys headroom for a full 90 Hz refresh.
-  if (typeof renderer.xr.setFoveation === 'function') renderer.xr.setFoveation(0.6);
+  if (typeof renderer.xr.setFoveation === 'function') {
+    renderer.xr.setFoveation(0.6);
+    sessionFacts.foveation = typeof renderer.xr.getFoveation === 'function'
+      ? renderer.xr.getFoveation() ?? 0.6
+      : 0.6;
+  }
+
   const session = renderer.xr.getSession?.();
-  if (session && typeof session.updateTargetFrameRate === 'function' && session.supportedFrameRates) {
-    const best = Math.max(...Array.from(session.supportedFrameRates).filter((r) => r <= 90));
-    if (Number.isFinite(best)) session.updateTargetFrameRate(best).catch(() => {});
+  if (session) {
+    if (session.supportedFrameRates) {
+      const rates = Array.from(session.supportedFrameRates).filter((r) => r <= 90);
+      sessionFacts.supportedFrameRates = rates;
+      const best = rates.length ? Math.max(...rates) : NaN;
+      if (Number.isFinite(best) && typeof session.updateTargetFrameRate === 'function') {
+        session.updateTargetFrameRate(best)
+          .then(() => { sessionFacts.frameRate = best; })
+          .catch(() => note(`Runtime refused ${best} Hz target`));
+      }
+    }
+    sessionFacts.frameRate = sessionFacts.frameRate || session.frameRate || null;
+    sessionFacts.inputs = describeInputs();
+
+    // Controllers are frequently powered on, or handed over from hand
+    // tracking, after the session has already begun.
+    session.addEventListener('inputsourceschange', (event) => {
+      sessionFacts.inputs = describeInputs();
+      if (event.added?.length) note(`Input connected: ${Array.from(event.added).map((s) => s.handedness).join(', ')}`);
+      if (event.removed?.length) note(`Input lost: ${Array.from(event.removed).map((s) => s.handedness).join(', ')}`);
+      if (diagVisible) drawDiagPanel();
+    });
+
+    // Taking the headset off should not leave the rig drifting.
+    session.addEventListener('visibilitychange', () => {
+      if (session.visibilityState !== 'visible') note(`Session ${session.visibilityState}`);
+    });
   }
 
   savedCamera.position.copy(camera.position);
@@ -338,6 +573,16 @@ function handleSessionStart() {
   hoveredName = null;
   drawWristPanel();
 
+  measuredFps = 0;
+  frameCount = 0;
+  frameWindow = 0;
+  note('Session started');
+  // Show the report during the arrival glide so a first-time headset user can
+  // see immediately whether tracking, controllers and the sky plate are all
+  // healthy, then hide it before free flight begins.
+  setDiagVisible(true);
+  setTimeout(() => { if (presenting) setDiagVisible(false); }, ARRIVAL_DURATION * 1000);
+
   document.body.classList.add('xr-presenting');
 }
 
@@ -360,6 +605,8 @@ function handleSessionEnd() {
   }
 
   if (vignette) vignette.material.opacity = 0;
+  setDiagVisible(false);
+  sessionFacts.referenceSpace = 'pending';
   document.body.classList.remove('xr-presenting');
 }
 
@@ -462,15 +709,19 @@ export function updateVR(delta) {
   const step = Math.min(delta, 0.05);
   const previousPosition = rig.position.clone();
 
+  updateFrameRate(step);
+
   if (travelT < 1) {
     updateTravel(step);
   } else {
     updateFlight(step);
     updateSnapTurn();
+    updateGazeGlide(step);
   }
 
   updatePointer();
   updateVignette(previousPosition, step);
+  updateDiagToggle(step);
 }
 
 function updateTravel(step) {
@@ -535,6 +786,21 @@ function updateSnapTurn() {
   }
 
   if (stick.y && !surfaceMode) rig.position.y -= stick.y * BASE_SPEED * 0.016;
+}
+
+/**
+ * Hand tracking, Vision Pro pinches and gaze-only runtimes expose no
+ * thumbstick, so those users would otherwise be stranded wherever they spawn.
+ * Holding the pinch/trigger glides them along their view direction.
+ */
+function updateGazeGlide(step) {
+  if (controllers.some((c) => c.userData.gamepad)) return;
+  if (!controllers.some((c) => c.userData.selecting)) return;
+
+  const orientation = new THREE.Quaternion();
+  renderer.xr.getCamera().getWorldQuaternion(orientation);
+  const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(orientation);
+  rig.position.addScaledVector(forward, BASE_SPEED * 0.5 * step);
 }
 
 function applySnapTurn(angle) {
@@ -636,11 +902,15 @@ async function resolveReferenceSpace(session) {
     try {
       await session.requestReferenceSpace(type);
       renderer.xr.setReferenceSpaceType(type);
+      sessionFacts.referenceSpace = type;
+      if (type !== 'local-floor') note(`Runtime granted "${type}" instead of local-floor`);
       return type;
     } catch {
       /* try the next one */
     }
   }
+  sessionFacts.referenceSpace = 'viewer';
+  note('Only viewer space available — positional tracking is off');
   return 'viewer';
 }
 

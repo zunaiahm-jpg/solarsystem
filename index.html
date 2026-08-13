@@ -21,63 +21,21 @@
   ═══════════════════════════════════════════ -->
   <div id="loading-screen">
     <div class="loading-inner">
-      <div class="loading-logo">🌌</div>
-      <h1>SOLAR SYSTEM</h1>
-      <p class="loading-subtitle">Eyes on the Solar System</p>
+      <p class="loading-kicker">Interactive orbital experience · 8K celestial field</p>
+      <h1>Solar<br><span>System</span></h1>
+      <p class="loading-subtitle">A live, explorable passage from Earth into the solar system.</p>
       <div class="loading-track">
         <div id="loader-progress" class="loading-fill"></div>
       </div>
       <p id="loader-text" class="loader-status">Initializing…</p>
     </div>
+    <p class="loading-proof"><span><b>8K</b> NASA sky</span><span><b>LIVE</b> Earth clouds</span><span><b>VR</b> Quest ready</span></p>
   </div>
 
   <!-- ═══════════════════════════════════════════
        THREE.JS CANVAS
   ═══════════════════════════════════════════ -->
   <canvas id="space-canvas"></canvas>
-
-  <main id="launch-landing" class="launch-landing" aria-labelledby="launch-title">
-    <nav class="launch-nav" aria-label="Primary navigation">
-      <a class="launch-brand" href="#" aria-label="Odyssey home"><span>ODYSSEY</span><small>Beyond Earth</small></a>
-      <div class="launch-nav-links" aria-hidden="true"><span>Mission</span><span>Universe</span><span>Experience</span></div>
-      <button class="launch-nav-cta" type="button" data-open-explore>Begin journey</button>
-    </nav>
-    <section class="launch-hero">
-      <p class="launch-kicker">Interactive orbital experience · 8K celestial field</p>
-      <h1 id="launch-title">Leave the familiar.<br><span>Enter the infinite.</span></h1>
-      <p class="launch-copy">A live, explorable passage from Earth into the solar system—built for the web and ready for immersive VR.</p>
-      <div class="launch-actions">
-        <button id="explore-launch" class="launch-primary" type="button" data-open-explore>Explore space <span aria-hidden="true">↗</span></button>
-        <button id="skip-launch" class="launch-secondary" type="button">Enter without sharing</button>
-      </div>
-      <div class="launch-proof"><span><b>8K</b> NASA sky</span><span><b>LIVE</b> Earth clouds</span><span><b>VR</b> Quest ready</span></div>
-    </section>
-    <p class="launch-orbit-label" aria-hidden="true">EARTH · 12,742 KM</p>
-  </main>
-
-  <div id="explore-dialog" class="explore-dialog" role="dialog" aria-modal="true" aria-labelledby="explore-title" hidden>
-    <div class="explore-backdrop" data-close-explore></div>
-    <section class="explore-panel">
-      <button class="explore-close" type="button" aria-label="Close form" data-close-explore>×</button>
-      <p class="launch-kicker">Transmission 001</p>
-      <h2 id="explore-title">Before we leave Earth</h2>
-      <p>Tell us who is joining the mission. Your response helps shape what this universe becomes.</p>
-      <form id="explore-form">
-        <input class="form-trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
-        <div class="explore-grid">
-          <label>Name<input name="name" maxlength="120" autocomplete="name" required /></label>
-          <label>Email<input name="email" type="email" maxlength="254" autocomplete="email" required /></label>
-        </div>
-        <label>Country<input name="country" maxlength="100" autocomplete="country-name" required /></label>
-        <label>What do you think about space and the universe?<textarea name="thoughts" maxlength="2000" rows="4" required></textarea></label>
-        <p id="explore-status" class="explore-status" role="status" aria-live="polite"></p>
-        <div class="explore-submit-row">
-          <button class="launch-primary" type="submit">Share & explore</button>
-          <button class="launch-secondary" type="button" id="form-skip">Skip for now</button>
-        </div>
-      </form>
-    </section>
-  </div>
 
   <!-- ═══════════════════════════════════════════
        TOP HUD BAR
@@ -86,9 +44,14 @@
 
     <!-- Logo -->
     <div class="top-logo">
-      <span class="logo-icon">🪐</span>
-      <span class="logo-text">SOLAR<br>SYSTEM</span>
+      <svg class="logo-mark" viewBox="0 0 28 28" aria-hidden="true">
+        <ellipse cx="14" cy="14" rx="12.5" ry="5" transform="rotate(-24 14 14)" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/>
+        <circle cx="14" cy="14" r="4" fill="currentColor"/>
+        <circle cx="24" cy="9.4" r="1.6" fill="currentColor"/>
+      </svg>
+      <span class="logo-text">Solar System<small>Eyes on the solar system</small></span>
     </div>
+    <span class="hud-rule" aria-hidden="true"></span>
 
     <!-- Search -->
     <div class="top-center">
@@ -342,6 +305,7 @@
 
     <!-- Coordinates -->
     <div class="coords-cluster">
+      <span class="hud-label">POSITION</span>
       <span id="coord-ra">RA 0.0°</span>
       <span id="coord-dec">Dec 0.0°</span>
       <span id="coord-dist">0.0 AU</span>
@@ -388,7 +352,6 @@
   }
   </script>
   <script type="module" src="js/app.js?v=surface-3"></script>
-  <script src="js/launch.js?v=launch-1" defer></script>
 
 </body>
 </html>

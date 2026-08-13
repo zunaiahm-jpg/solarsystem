@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { FAMOUS_STARS_DATA, CONSTELLATIONS_DATA } from './data.js';
+import { loadSky, skyStatus } from './skyMedia.js?v=sky-8k-1';
 
 export let starObjects = [];
 let starEnvironment = null;
@@ -28,7 +29,9 @@ const SKY_VERT = `
 const SKY_FRAG = `
   uniform sampler2D uSky;
   uniform float uExposure;
+  uniform float uTime;
   varying vec2 vUv;
+
   void main() {
     vec3 photographed = texture2D(uSky, vUv).rgb;
     vec3 linearColor = pow(max(photographed, vec3(0.0)), vec3(2.2));
@@ -38,7 +41,13 @@ const SKY_FRAG = `
     vec3 neutralSky = vec3(luminance * 0.86, luminance * 0.92, luminance);
     vec3 color = mix(neutralSky, linearColor, 0.46);
     color = max(color - vec3(0.0018), vec3(0.0));
-    color *= uExposure;
+
+    // Extremely slow, spatially smooth scintillation. No per-frame randomness
+    // is used anywhere: random noise is precisely what makes a sky read as
+    // television static instead of as vacuum.
+    float wave = sin(vUv.x * 42.0 + uTime * 0.21) * sin(vUv.y * 37.0 - uTime * 0.17);
+    float shimmer = 1.0 + wave * 0.035 * smoothstep(0.06, 0.55, luminance);
+    color *= uExposure * shimmer;
 
     // Human vision sees most of space as black, with the Milky Way only faintly visible.
     color = pow(color, vec3(0.88));
@@ -160,7 +169,8 @@ export function createStarField(scene, renderer) {
   skyMaterial = new THREE.ShaderMaterial({
     uniforms: {
       uSky: { value: placeholder },
-      uExposure: { value: 0.42 }
+      uExposure: { value: 0.42 },
+      uTime: { value: 0 }
     },
     vertexShader: SKY_VERT,
     fragmentShader: SKY_FRAG,
@@ -177,29 +187,29 @@ export function createStarField(scene, renderer) {
   proceduralStarGroup = createHumanEyeStars();
   starEnvironment.add(proceduralStarGroup);
 
-  new THREE.TextureLoader().load(
-    './assets/sky/starmap-nasa-8k.jpg',
-    texture => {
-      texture.colorSpace = THREE.NoColorSpace;
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.ClampToEdgeWrapping;
-      texture.minFilter = THREE.LinearMipmapLinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-      texture.generateMipmaps = true;
+  loadSky({
+    renderer,
+    onTexture: (texture, tier) => {
       // Conservative anisotropy preserves detail without overspending Quest GPU time.
-      if (renderer) texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+      if (renderer && texture.isVideoTexture !== true) {
+        texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+      }
+      const previous = skyMaterial.uniforms.uSky.value;
       skyMaterial.uniforms.uSky.value = texture;
-      window._spaceSkyResolution = '8192×4096';
+      if (previous && previous !== texture && previous.dispose) previous.dispose();
+      window._spaceSkyResolution = `${tier.width}×${tier.width / 2}`;
       window._spaceSkyReady = true;
       window.dispatchEvent(new Event('space-sky-ready'));
     },
-    undefined,
-    error => {
-      console.warn('The photographic all-sky panorama could not be loaded.', error);
-      window._spaceSkyReady = true;
-      window.dispatchEvent(new Event('space-sky-ready'));
+    onStatus: (status) => {
+      window._spaceSkyStatus = status;
+      window.dispatchEvent(new Event('space-sky-status'));
     }
-  );
+  }).catch((error) => {
+    console.warn('The all-sky plate could not be loaded.', error);
+    window._spaceSkyReady = true;
+    window.dispatchEvent(new Event('space-sky-ready'));
+  });
 
   return starEnvironment;
 }
@@ -269,8 +279,12 @@ export function updateStars(time) {
     });
   }
   stellarSprites.forEach(sprite => {
-    sprite.material.opacity = 0.78 + Math.sin(time * 0.8 + sprite.userData.phase) * 0.08;
+    sprite.material.opacity = 0.82 + Math.sin(time * 0.22 + sprite.userData.phase) * 0.03;
   });
+}
+
+export function getSkyStatus() {
+  return skyStatus;
 }
 
 export function updateStarResolution() {
