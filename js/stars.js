@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { FAMOUS_STARS_DATA, CONSTELLATIONS_DATA } from './data.js';
+import { loadSky, skyStatus } from './skyMedia.js?v=sky-8k-1';
 
 export let starObjects = [];
 let starEnvironment = null;
@@ -20,7 +21,9 @@ const SKY_VERT = `
 const SKY_FRAG = `
   uniform sampler2D uSky;
   uniform float uExposure;
+  uniform float uTime;
   varying vec2 vUv;
+
   void main() {
     vec3 photographed = texture2D(uSky, vUv).rgb;
     vec3 linearColor = pow(max(photographed, vec3(0.0)), vec3(2.2));
@@ -30,7 +33,13 @@ const SKY_FRAG = `
     vec3 neutralSky = vec3(luminance * 0.86, luminance * 0.92, luminance);
     vec3 color = mix(neutralSky, linearColor, 0.46);
     color = max(color - vec3(0.0018), vec3(0.0));
-    color *= uExposure;
+
+    // Extremely slow, spatially smooth scintillation. No per-frame randomness
+    // is used anywhere: random noise is precisely what makes a sky read as
+    // television static instead of as vacuum.
+    float wave = sin(vUv.x * 42.0 + uTime * 0.21) * sin(vUv.y * 37.0 - uTime * 0.17);
+    float shimmer = 1.0 + wave * 0.035 * smoothstep(0.06, 0.55, luminance);
+    color *= uExposure * shimmer;
 
     // Human vision sees most of space as black, with the Milky Way only faintly visible.
     color = pow(color, vec3(0.88));
@@ -152,7 +161,8 @@ export function createStarField(scene, renderer) {
   skyMaterial = new THREE.ShaderMaterial({
     uniforms: {
       uSky: { value: placeholder },
-      uExposure: { value: 0.42 }
+      uExposure: { value: 0.42 },
+      uTime: { value: 0 }
     },
     vertexShader: SKY_VERT,
     fragmentShader: SKY_FRAG,
@@ -168,25 +178,28 @@ export function createStarField(scene, renderer) {
   starEnvironment.add(skyDome);
   starEnvironment.add(createHumanEyeStars());
 
-  new THREE.TextureLoader().load(
-    './assets/sky/milky-way-eso-6k.jpg',
-    texture => {
-      texture.colorSpace = THREE.NoColorSpace;
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.minFilter = THREE.LinearMipmapLinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-      if (renderer) texture.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
+  // Tiered load: 4K appears immediately, the 8K NASA plate replaces it once
+  // decoded, and a looping video plate takes over if one has been built and the
+  // device can decode it. See js/skyMedia.js.
+  loadSky({
+    renderer,
+    onTexture: (texture) => {
+      const previous = skyMaterial.uniforms.uSky.value;
       skyMaterial.uniforms.uSky.value = texture;
+      skyMaterial.needsUpdate = true;
+      if (previous && previous !== placeholder && previous.dispose) previous.dispose();
       window._spaceSkyReady = true;
       window.dispatchEvent(new Event('space-sky-ready'));
     },
-    undefined,
-    error => {
-      console.warn('The photographic all-sky panorama could not be loaded.', error);
-      window._spaceSkyReady = true;
-      window.dispatchEvent(new Event('space-sky-ready'));
+    onStatus: (status) => {
+      window._spaceSkyStatus = status;
+      window.dispatchEvent(new Event('space-sky-status'));
     }
-  );
+  }).catch((error) => {
+    console.warn('The all-sky plate could not be loaded.', error);
+    window._spaceSkyReady = true;
+    window.dispatchEvent(new Event('space-sky-ready'));
+  });
 
   return starEnvironment;
 }
@@ -241,13 +254,21 @@ export function createConstellations(scene) {
 }
 
 export function updateStars(time) {
+  if (skyMaterial) skyMaterial.uniforms.uTime.value = time;
   if (!famousStarGroup) return;
   famousStarGroup.children.forEach(child => {
-    if (child.isSprite) child.material.opacity = .54 + Math.sin(time * 1.1 + child.userData.phase) * .035;
+    if (child.isSprite) child.material.opacity = .54 + Math.sin(time * 0.35 + child.userData.phase) * .02;
   });
+  // Deliberately slow and shallow. Outside an atmosphere stars do not twinkle
+  // at all, and anything faster than this reads as flickering noise — the
+  // "static" effect — especially in a headset at 90 Hz.
   stellarSprites.forEach(sprite => {
-    sprite.material.opacity = 0.78 + Math.sin(time * 0.8 + sprite.userData.phase) * 0.08;
+    sprite.material.opacity = 0.82 + Math.sin(time * 0.22 + sprite.userData.phase) * 0.03;
   });
+}
+
+export function getSkyStatus() {
+  return skyStatus;
 }
 
 export function updateStarResolution() {
