@@ -7,7 +7,15 @@ let starEnvironment = null;
 let constellationLines = null;
 let famousStarGroup = null;
 let skyMaterial = null;
+let skyDome = null;
+let proceduralStarGroup = null;
 let stellarSprites = [];
+
+// Slow enough to read as a living celestial field without creating vection in VR.
+// Rates are radians per second and derive from elapsed time, so Quest refresh rate
+// changes (72/80/90 Hz) never alter the perceived motion speed.
+const SKY_ROTATION_RATE = 0.000018;
+const STAR_DRIFT_RATE = 0.000026;
 
 const SKY_VERT = `
   varying vec2 vUv;
@@ -172,22 +180,24 @@ export function createStarField(scene, renderer) {
     fog: false,
     toneMapped: true
   });
-  const skyDome = new THREE.Mesh(geometry, skyMaterial);
+  skyDome = new THREE.Mesh(geometry, skyMaterial);
   skyDome.frustumCulled = false;
   skyDome.renderOrder = -1000;
   starEnvironment.add(skyDome);
-  starEnvironment.add(createHumanEyeStars());
+  proceduralStarGroup = createHumanEyeStars();
+  starEnvironment.add(proceduralStarGroup);
 
-  // Tiered load: 4K appears immediately, the 8K NASA plate replaces it once
-  // decoded, and a looping video plate takes over if one has been built and the
-  // device can decode it. See js/skyMedia.js.
   loadSky({
     renderer,
-    onTexture: (texture) => {
+    onTexture: (texture, tier) => {
+      // Conservative anisotropy preserves detail without overspending Quest GPU time.
+      if (renderer && texture.isVideoTexture !== true) {
+        texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+      }
       const previous = skyMaterial.uniforms.uSky.value;
       skyMaterial.uniforms.uSky.value = texture;
-      skyMaterial.needsUpdate = true;
-      if (previous && previous !== placeholder && previous.dispose) previous.dispose();
+      if (previous && previous !== texture && previous.dispose) previous.dispose();
+      window._spaceSkyResolution = `${tier.width}×${tier.width / 2}`;
       window._spaceSkyReady = true;
       window.dispatchEvent(new Event('space-sky-ready'));
     },
@@ -254,14 +264,20 @@ export function createConstellations(scene) {
 }
 
 export function updateStars(time) {
-  if (skyMaterial) skyMaterial.uniforms.uTime.value = time;
-  if (!famousStarGroup) return;
-  famousStarGroup.children.forEach(child => {
-    if (child.isSprite) child.material.opacity = .54 + Math.sin(time * 0.35 + child.userData.phase) * .02;
-  });
-  // Deliberately slow and shallow. Outside an atmosphere stars do not twinkle
-  // at all, and anything faster than this reads as flickering noise — the
-  // "static" effect — especially in a headset at 90 Hz.
+  // Independent, extremely slow rotations prevent the background reading as a
+  // frozen image. Rotation only (never translation) keeps the sky at infinity
+  // and avoids artificial parallax or discomfort in a tracked headset.
+  if (skyDome) skyDome.rotation.y = time * SKY_ROTATION_RATE;
+  if (proceduralStarGroup) {
+    proceduralStarGroup.rotation.y = -time * STAR_DRIFT_RATE;
+    proceduralStarGroup.rotation.z = Math.sin(time * 0.00007) * 0.0015;
+  }
+
+  if (famousStarGroup) {
+    famousStarGroup.children.forEach(child => {
+      if (child.isSprite) child.material.opacity = .54 + Math.sin(time * 1.1 + child.userData.phase) * .035;
+    });
+  }
   stellarSprites.forEach(sprite => {
     sprite.material.opacity = 0.82 + Math.sin(time * 0.22 + sprite.userData.phase) * 0.03;
   });

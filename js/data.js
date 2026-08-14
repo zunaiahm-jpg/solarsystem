@@ -262,6 +262,30 @@ export const CONSTELLATIONS_DATA = [
   }
 ];
 
+// ─── Physical metrics for the bottom-left stats table (jaksic style) ───────
+// Absolute values + Earth-relative ratios (Earth = 1). null hides the row.
+// distanceKm: mean distance to the Sun (moons: distance to their planet).
+export const OBJECT_METRICS = {
+  sun:     { distanceKm: null,     diameterKm: 1392700, massEarths: 332946, yearDays: null,   dayHours: 587.3,  moons: null },
+  mercury: { distanceKm: 57.9e6,   diameterKm: 4879,    massEarths: 0.0553, yearDays: 87.97,  dayHours: 1407.6, moons: 0 },
+  venus:   { distanceKm: 108.2e6,  diameterKm: 12104,   massEarths: 0.815,  yearDays: 224.7,  dayHours: 5832.5, moons: 0 },
+  earth:   { distanceKm: 149.6e6,  diameterKm: 12742,   massEarths: 1,      yearDays: 365.25, dayHours: 24,     moons: 1 },
+  moon:    { distanceKm: 384400,   diameterKm: 3474,    massEarths: 0.0123, yearDays: 27.32,  dayHours: 655.7,  moons: null },
+  mars:    { distanceKm: 227.9e6,  diameterKm: 6779,    massEarths: 0.107,  yearDays: 686.98, dayHours: 24.62,  moons: 2 },
+  jupiter: { distanceKm: 778.5e6,  diameterKm: 139820,  massEarths: 317.8,  yearDays: 4332.6, dayHours: 9.84,   moons: 95 },
+  io:      { distanceKm: 421700,   diameterKm: 3643,    massEarths: 0.015,  yearDays: 1.77,   dayHours: 42.5,   moons: null },
+  europa:  { distanceKm: 670900,   diameterKm: 3122,    massEarths: 0.008,  yearDays: 3.55,   dayHours: 85.2,   moons: null },
+  ganymede:{ distanceKm: 1070400,  diameterKm: 5268,    massEarths: 0.0248, yearDays: 7.15,   dayHours: 171.7,  moons: null },
+  callisto:{ distanceKm: 1882700,  diameterKm: 4821,    massEarths: 0.018,  yearDays: 16.69,  dayHours: 400.5,  moons: null },
+  saturn:  { distanceKm: 1434e6,   diameterKm: 116460,  massEarths: 95.16,  yearDays: 10759,  dayHours: 10.66,  moons: 146 },
+  titan:   { distanceKm: 1221870,  diameterKm: 5150,    massEarths: 0.0225, yearDays: 15.95,  dayHours: 382.7,  moons: null },
+  uranus:  { distanceKm: 2871e6,   diameterKm: 50724,   massEarths: 14.54,  yearDays: 30688,  dayHours: 17.24,  moons: 28 },
+  neptune: { distanceKm: 4495e6,   diameterKm: 49244,   massEarths: 17.15,  yearDays: 60182,  dayHours: 16.11,  moons: 16 }
+};
+
+// Earth reference values for the relative (%) / (×) readouts
+export const EARTH_METRICS = OBJECT_METRICS.earth;
+
 // Build the searchable objects list
 export const SEARCHABLE_OBJECTS = [
   { id: 'sun', name: 'Sun', type: 'Star', emoji: '☀️', category: 'solar-system' },
