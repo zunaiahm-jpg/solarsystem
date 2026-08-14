@@ -5,25 +5,25 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
-import { setupVR, updateVR, isPresenting, setSurfaceMode } from './vr.js?v=surface-2';
-import { PlanetarySurfaces } from './planetarySurfaces.js?v=surface-2';
+import { setupVR, updateVR, isPresenting, setSurfaceMode } from './vr.js?v=jaksic-1';
+import { PlanetarySurfaces } from './planetarySurfaces.js?v=jaksic-1';
 
 import {
   createStarField, createFamousStars, createConstellations,
   updateStars, setStarsVisible, setConstellationsVisible, starObjects
-} from './stars.js?v=astronaut-8';
+} from './stars.js?v=jaksic-1';
 import {
   createSolarSystem, updateSolarSystem, updateOrbitResolution, solarSystemObjects,
   setPlanetsVisible, setOrbitsVisible,
   selectObject, deselectAll
-} from './solarSystem.js?v=astronaut-8';
-import { createNebulae, updateNebulae, setNebulaeVisible, nebulaObjects } from './nebulae.js?v=astronaut-8';
-import { createLabels, updateLabels, setLabelsVisible } from './labels.js?v=astronaut-8';
+} from './solarSystem.js?v=jaksic-1';
+import { createNebulae, updateNebulae, setNebulaeVisible, nebulaObjects } from './nebulae.js?v=jaksic-1';
+import { createLabels, updateLabels, setLabelsVisible } from './labels.js?v=jaksic-1';
 import {
   setupUI, showInfoPanel, closeInfoPanel, showTooltip, hideTooltip,
   updateCoordinates, updateZoomLevel, updateCompass, setupViewButtons,
   highlightSidebarPlanet, clearSidebarHighlight, updateSurfaceStatus
-} from './ui.js?v=surface-2';
+} from './ui.js?v=jaksic-3';
 
 // ─── Renderer ───────────────────────────────────────────────────────────────
 const canvas = document.getElementById('space-canvas');
