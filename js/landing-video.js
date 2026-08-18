@@ -8,14 +8,14 @@
   if (!layer) return
 
   var VIDEO_ID = layer.dataset.videoId
-  var START = 5 // 0:05
+  var START = 7 // 0:07
   var END = 88 // 1:28
   var host = layer.querySelector('.landing-video-frame')
   var player = null
   var started = false
   var loopTimer = null
 
-  // Loop only the 0:05 - 1:28 segment.
+  // Loop only the 0:07 - 1:28 segment.
   function watchSegment() {
     if (loopTimer) return
     loopTimer = setInterval(function () {
@@ -53,10 +53,17 @@
         playsinline: 1,
         rel: 0,
         iv_load_policy: 3,
+        cc_load_policy: 0,
+        cc_lang_pref: 'none',
       },
       events: {
         onReady: function (event) {
           event.target.mute()
+          // Make sure no subtitle track renders over the background.
+          try {
+            event.target.unloadModule('captions')
+            event.target.unloadModule('cc')
+          } catch (err) {}
           event.target.seekTo(START, true)
           event.target.playVideo()
         },
