@@ -71,6 +71,16 @@
     border: 0;
   }
 
+  /* Transparent shield over the iframe so YouTube's own play/pause and
+     branding controls can never receive a tap/click. */
+  .landing-video-shield {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: transparent;
+    cursor: default;
+  }
+
   .landing-shell {
     background: var(--space);
   }
