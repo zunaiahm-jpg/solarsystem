@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { FAMOUS_STARS_DATA, CONSTELLATIONS_DATA } from './data.js';
-import { loadSky, skyStatus } from './skyMedia.js?v=sky-8k-1';
+import { loadSky, skyStatus } from './skyMedia.js';
 
 export let starObjects = [];
 let starEnvironment = null;
