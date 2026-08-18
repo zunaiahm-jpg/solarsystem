@@ -93,7 +93,14 @@ function setupCornerControls() {
   const modal = document.getElementById('about-modal');
   const openModal = () => { if (modal) modal.hidden = false; };
   const closeModal = () => { if (modal) modal.hidden = true; };
-  document.getElementById('help-btn')?.addEventListener('click', openModal);
+  const helpBtn = document.getElementById('help-btn');
+  helpBtn?.addEventListener('click', openModal);
+  helpBtn?.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openModal();
+    }
+  });
   document.getElementById('btn-about')?.addEventListener('click', openModal);
   document.getElementById('about-close')?.addEventListener('click', closeModal);
   modal?.addEventListener('click', e => { if (e.target === modal) closeModal(); });
