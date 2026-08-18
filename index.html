@@ -1,330 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="landing-root">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Solar System — A Semirealistic 8K Model</title>
-  <meta name="description" content="Explore the Solar System in adaptive 8K detail with free NASA imagery, immersive planetary terrain, and WebXR VR support." />
-  <meta name="theme-color" content="#020202" />
-
-  <!-- Fonts -->
+  <title>Explore the Solar System</title>
+  <meta name="description" content="Enter an immersive, interactive model of our solar system with real orbital data and high-resolution NASA textures." />
+  <meta name="theme-color" content="#05070a" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
-  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Jura:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/landing.css" />
 </head>
 <body>
+  <main class="landing-shell">
+    <div class="landing-art" aria-hidden="true"></div>
+    <div class="landing-shade" aria-hidden="true"></div>
 
-  <!-- ═══════════════════════════════════════════
-       SPLASH SCREEN (jaksic-style)
-  ═══════════════════════════════════════════ -->
-  <div id="loading-screen">
-    <div class="splash-inner">
-      <h3 class="splash-title">Solar System</h3>
-      <p class="splash-subtitle">A semi-realistic model in 8K</p>
-      <a href="#" id="start-btn" class="progress" role="button" aria-label="Start the experience">
-        <span id="start-label">Start</span>
-        <span id="loader-progress" class="tz-bar background-horizontal"></span>
+    <header class="landing-header">
+      <button class="about-trigger" type="button" popovertarget="about-panel" aria-label="Open information about this project">
+        <span class="about-mark" aria-hidden="true">?</span>
+        <span>About</span>
+      </button>
+    </header>
+
+    <section class="landing-entry" aria-label="Enter the solar system experience">
+      <a class="explore-button" href="explorer.html">
+        <span>Explore Solarsystem</span>
+        <span class="explore-arrow" aria-hidden="true">→</span>
       </a>
-      <p id="loader-text" class="loader-status">Initializing…</p>
-      <p class="splash-proof">8K NASA textures · Live Earth clouds · WebXR VR</p>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════
-       THREE.JS CANVAS
-  ═══════════════════════════════════════════ -->
-  <canvas id="space-canvas"></canvas>
-
-  <!-- ═══════════════════════════════════════════
-       CORNER ICONS (fullscreen / help)
-  ═══════════════════════════════════════════ -->
-  <div id="fullscreen-btn" class="corner-icon" title="Toggle fullscreen" role="button" tabindex="0" aria-label="Toggle fullscreen">
-    <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="1.17 1.17 45.67 45.67" aria-hidden="true">
-      <path d="M33 6H42V15" stroke="#999" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M42 33V42H33" stroke="#999" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M15 42H6V33" stroke="#999" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M6 15V6H15" stroke="#999" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </div>
-
-  <div id="help-btn" class="corner-icon" title="About this project" role="button" tabindex="0" aria-label="About this project">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <circle cx="24" cy="24" r="20" stroke="#999" stroke-width="3"/>
-      <text x="24" y="32" text-anchor="middle" font-size="24" font-weight="600" fill="#999" font-family="Jura, sans-serif">?</text>
-    </svg>
-  </div>
-
-  <!-- ═══════════════════════════════════════════
-       SETTINGS PANEL (left-side command palette)
-  ═══════════════════════════════════════════ -->
-  <button id="controls-rail" type="button" aria-controls="settings-panel" aria-expanded="true" aria-label="Open controls" title="Open controls">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 7h10M18 7h2M4 17h2M10 17h10M4 12h4M12 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-      <circle cx="16" cy="7" r="2" stroke="currentColor" stroke-width="1.8"/>
-      <circle cx="8" cy="17" r="2" stroke="currentColor" stroke-width="1.8"/>
-      <circle cx="10" cy="12" r="2" stroke="currentColor" stroke-width="1.8"/>
-    </svg>
-    <span class="sr-only">Open controls</span>
-  </button>
-
-  <div id="settings-panel">
-    <button id="settings-toggle" type="button" aria-controls="settings-body" aria-expanded="true">
-      <span class="settings-heading"><span class="settings-kicker">Navigation</span><span>Settings</span></span>
-      <span class="caret" aria-hidden="true">▸</span>
-    </button>
-    <div id="settings-body">
-
-      <label class="s-row" for="camera-select">
-        <span class="s-label">Camera</span>
-        <select id="camera-select"></select>
-      </label>
-
-      <div class="s-row s-search">
-        <div class="search-wrap">
-          <button id="search-submit" class="search-icon" type="button" aria-label="Search space objects" title="Search">
-            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.5"/>
-              <line x1="13" y1="13" x2="18" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </button>
-          <input
-            type="text"
-            id="search-input"
-            placeholder="Search objects…"
-            autocomplete="off"
-            spellcheck="false"
-          />
-          <div id="search-results"></div>
-        </div>
-      </div>
-
-      <label class="s-row"><span class="s-label">Info</span><input type="checkbox" id="toggle-info" checked /></label>
-      <label class="s-row"><span class="s-label">Orbits</span><input type="checkbox" id="toggle-orbits" /></label>
-      <label class="s-row"><span class="s-label">Labels</span><input type="checkbox" id="toggle-labels" /></label>
-      <label class="s-row"><span class="s-label">Stars</span><input type="checkbox" id="toggle-stars" checked /></label>
-      <label class="s-row"><span class="s-label">Nebulae</span><input type="checkbox" id="toggle-nebulae" /></label>
-      <label class="s-row"><span class="s-label">Lines</span><input type="checkbox" id="toggle-constellations" /></label>
-      <label class="s-row"><span class="s-label">Planets</span><input type="checkbox" id="toggle-planets" checked /></label>
-      <label class="s-row"><span class="s-label">Pause</span><input type="checkbox" id="toggle-pause" /></label>
-
-      <div class="s-row s-time">
-        <span class="s-label">Time</span>
-        <input type="range" id="time-speed" min="0" max="20" value="1" step="0.5" />
-        <span id="speed-label">1×</span>
-      </div>
-
-      <button class="s-btn" id="btn-solar-system" type="button">Solar system view</button>
-      <button class="s-btn" id="btn-galaxy" type="button">Wide view</button>
-      <button class="s-btn" id="btn-reset" type="button">Reset view</button>
-      <button class="s-btn" id="btn-vr" type="button" aria-label="Enter VR" title="Enter VR — step inside the solar system">Enter VR</button>
-      <button class="s-btn" id="btn-about" type="button">About</button>
-
-    </div>
-    <button id="controls-toggle" type="button" aria-controls="settings-panel" aria-expanded="true"><span aria-hidden="true">←</span> Close controls</button>
-  </div>
-
-  <!-- ═══════════════════════════════════════════
-       OBJECT STATS (bottom-left, jaksic style)
-  ═══════════════════════════════════════════ -->
-  <div id="obj-stats" style="display:none">
-    <table>
-      <thead>
-        <tr><th colspan="2" id="stat-name">Earth</th></tr>
-      </thead>
-      <tbody>
-        <tr id="row-distance">
-          <td class="metric" title="Mean distance from the Sun">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="#fff" viewBox="125.97 214.67 448.03 130.7" aria-label="Distance">
-              <path d="m191.33 214.67c-36.027 0-65.332 29.309-65.332 65.332 0 36.027 29.309 65.332 65.332 65.332 36.027 0 65.332-29.309 65.332-65.332 0.003907-36.027-29.305-65.332-65.332-65.332zm0 112c-25.762 0-46.668-20.906-46.668-46.668s20.906-46.668 46.668-46.668 46.668 20.906 46.668 46.668-20.906 46.668-46.668 46.668z"/>
-              <path d="m527.33 233.33c-25.762 0-46.668 20.906-46.668 46.668s20.906 46.668 46.668 46.668 46.668-20.906 46.668-46.668-20.906-46.668-46.668-46.668zm0 74.668c-15.398 0-28-12.602-28-28s12.602-28 28-28c15.398 0 28 12.602 28 28s-12.598 28-28 28z"/>
-              <path d="m313.13 251.62c-3.0781-4.1055-8.9609-4.9453-13.066-1.8672l-30.332 22.777c-0.1875 0.09375-0.1875 0.28125-0.375 0.46484-0.74609 0.65234-1.3086 1.3086-1.7734 2.1484-0.1875 0.375-0.46484 0.65234-0.65234 0.93359-0.55859 1.2109-0.93359 2.5195-0.93359 3.918s0.375 2.707 0.93359 3.9219c0.1875 0.375 0.46484 0.65234 0.65234 0.93359 0.46484 0.83984 1.0273 1.4922 1.7734 2.1484 0.1875 0.09375 0.1875 0.28125 0.375 0.46484l30.332 22.773c1.6797 1.3086 3.6406 1.8672 5.6016 1.8672 2.8008 0 5.6016-1.3086 7.4648-3.7344 3.0781-4.1055 2.2383-9.9883-1.8672-13.066l-7.9336-5.9766h130.67l-7.9336 5.9727c-4.1055 3.0781-4.9453 8.9609-1.8672 13.066 1.8672 2.4258 4.668 3.7344 7.4648 3.7344 1.9609 0 3.9219-0.55859 5.6016-1.8672l30.332-22.773c0.1875-0.09375 0.1875-0.28125 0.375-0.46484 0.74609-0.65234 1.3086-1.3086 1.7734-2.1484 0.1875-0.375 0.46484-0.65234 0.65234-0.93359 0.5625-1.2109 0.93359-2.5195 0.93359-3.918s-0.375-2.707-0.93359-3.9219c-0.1875-0.375-0.46484-0.65234-0.65234-0.93359-0.46484-0.83984-1.0273-1.4922-1.7734-2.1484-0.1875-0.09375-0.1875-0.28125-0.375-0.46484l-30.332-22.773c-4.1055-3.0781-9.9883-2.2383-13.066 1.8672s-2.2383 9.9883 1.8672 13.066l7.9336 5.9766h-130.67l7.9336-5.9727c4.1094-3.082 4.9492-8.9609 1.8672-13.07z"/>
-            </svg>
-          </td>
-          <td class="value"><div class="abs_value" id="v-distance"></div><div class="rel_value" id="r-distance"></div></td>
-        </tr>
-        <tr id="row-diameter">
-          <td class="metric" title="Diameter">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="#fff" viewBox="92 21.98 516 516.02" aria-label="Diameter">
-              <path d="m 346.70117,22.021484 c -37.24514,0.443999 -74.39542,9.017665 -107.97875,25.153261 -35.65125,17.05307 -67.27963,42.426354 -91.67171,73.520695 -21.11855,26.85577 -36.86167,57.93624 -45.88093,90.89511 -12.302156,44.8449 -12.228221,93.01483 0.27729,137.80766 9.0933,32.70809 24.80069,63.54341 45.82691,90.19157 21.14479,26.84825 47.65805,49.44745 77.53179,66.04877 28.71665,15.97385 60.52282,26.37797 93.14367,30.37507 37.1507,4.62027 75.31035,1.14855 110.96109,-10.31324 34.95673,-11.18519 67.41315,-30.03087 94.55559,-54.72604 26.30153,-23.87731 47.62183,-53.22516 62.12176,-85.65882 12.81573,-28.58957 20.30086,-59.54682 22.00411,-90.82955 1.96914,-35.28524 -3.28202,-70.9882 -15.59774,-104.12689 C 578.52066,153.95168 556.65168,120.7006 528.6267,93.843359 501.3194,67.615072 468.19605,47.453282 432.29106,35.40704 404.78798,26.157877 375.71162,21.646513 346.70117,22.021484 Z m 3.30274,28.779297 c 3.23978,0.01217 6.4738,0.07476 9.65122,0.206602 6.19652,0.253342 12.26725,0.758644 18.4099,1.505171 1.89046,0.224996 3.73426,0.483035 5.66781,0.76244 3.99725,0.586232 7.9415,1.273714 11.93471,2.082517 21.58355,4.349088 42.66542,11.923099 62.14049,22.331224 18.00657,9.612937 34.82683,21.728506 49.69193,35.805905 1.85008,1.74997 3.54969,3.41708 5.34449,5.22699 18.69641,18.86715 34.10138,40.9927 45.26101,65.09868 0.50826,1.14113 1.14333,2.49682 1.67674,3.73233 10.69317,24.1819 17.08624,50.20861 18.86896,76.58528 0.92686,13.60907 0.65792,27.29999 -0.80351,40.86208 -0.21142,1.90867 -0.46301,4.01512 -0.73355,5.99573 -0.21764,1.67419 -0.46239,3.23084 -0.72167,4.9375 -0.78141,5.00025 -1.75217,10.02047 -2.84082,14.86072 -6.61949,29.30493 -19.12718,57.25653 -36.53673,81.7394 -3.47825,4.89271 -7.0618,9.5518 -10.93303,14.19023 -18.37943,22.04207 -40.90865,40.61453 -66.083,54.3998 -2.22467,1.21358 -4.67516,2.50851 -7.0263,3.69072 -4.95184,2.49345 -9.99425,4.8059 -15.11123,6.93981 -1.11304,0.45177 -2.45093,1.00876 -3.65932,1.48408 -7.40758,2.92342 -14.96492,5.46897 -22.63951,7.59599 -9.57847,2.66698 -19.44966,4.72204 -29.33984,6.11914 -3.90651,0.54489 -7.97917,1.01794 -11.96887,1.35959 -8.6551,0.76282 -17.46513,1.02139 -26.20496,0.80643 -1.05776,-0.0321 -2.35294,-0.0765 -3.50195,-0.11328 -1.03902,-0.0538 -2.34909,-0.11289 -3.49219,-0.16992 -11.52197,-0.64571 -22.99528,-2.1479 -34.29102,-4.51172 -15.5564,-3.25684 -30.95901,-8.19811 -45.54889,-14.69097 -5.43813,-2.39581 -10.76956,-5.03001 -16.00189,-7.84614 -3.53739,-1.92105 -7.1743,-4.00813 -10.66601,-6.13672 -3.4216,-2.10176 -6.83659,-4.30808 -10.19381,-6.62025 -6.74475,-4.628 -13.38714,-9.73592 -19.64483,-15.11941 -3.08293,-2.65287 -6.25948,-5.52515 -9.25823,-8.40964 -8.88645,-8.51172 -17.08076,-17.7434 -24.50274,-27.55773 -0.78763,-1.06032 -1.73032,-2.30759 -2.55493,-3.45763 -18.03104,-24.77395 -30.96925,-53.22775 -37.80836,-83.09511 -0.42194,-1.85633 -0.87176,-3.91424 -1.25973,-5.85798 -1.22607,-6.07618 -2.18388,-12.16306 -2.92663,-18.34234 -1.17015,-10.01476 -1.71857,-20.29225 -1.56639,-30.44761 0.30344,-22.33312 3.86621,-44.7927 10.67276,-66.14408 7.71151,-24.36705 19.59883,-47.39737 34.91984,-67.85056 1.80892,-2.40351 3.788,-4.94876 5.69604,-7.28703 8.69234,-10.67992 18.33985,-20.58205 28.79224,-29.54696 0.69724,-0.58431 1.66266,-1.40543 2.35258,-1.98935 7.71278,-6.427133 15.84018,-12.356355 24.32125,-17.729398 0.77734,-0.486861 1.85288,-1.163161 2.6285,-1.639698 7.93609,-4.86667 16.25937,-9.306993 24.66837,-13.143505 9.18316,-4.198272 18.59721,-7.76005 28.27941,-10.712222 11.28406,-3.428972 22.89797,-5.997036 34.61512,-7.651059 3.90651,-0.544882 7.97917,-1.017939 11.96887,-1.359589 6.68501,-0.592527 13.49289,-0.875066 20.2577,-0.888458 z"/>
-              <path d="m 198.35547,223.94336 c -4.30965,-0.0158 -8.4421,2.12252 -11.23324,5.35039 -13.75885,13.77678 -27.56784,27.50519 -41.27129,41.33491 -4.55816,5.13166 -4.60601,13.66224 0.0442,18.75338 1.9142,2.17053 4.09217,4.08824 6.08635,6.18398 12.36147,12.34907 24.68304,24.74049 37.09652,37.03598 4.92817,4.36507 13.02807,4.64027 18.10987,0.3817 4.44771,-3.46081 6.81551,-9.67654 5.10044,-15.14853 -0.92531,-3.42495 -3.3957,-6.11729 -5.91824,-8.48545 -4.95084,-4.98376 -9.90169,-9.96752 -14.85253,-14.95128 105.65429,0 211.30859,0 316.96289,0 -5.98664,6.04205 -12.02381,12.0374 -17.9357,18.15141 -3.45238,4.03499 -4.45629,10.12374 -2.07407,14.93453 2.38352,5.22155 8.01397,8.96814 13.82546,8.54051 4.1503,-0.15479 8.02784,-2.34221 10.70938,-5.44832 13.71592,-13.732 27.47781,-27.41934 41.14154,-41.20135 4.55828,-5.12932 4.61025,-13.65673 -0.0356,-18.74874 -1.98874,-2.24257 -4.23772,-4.23557 -6.30589,-6.40344 -12.30674,-12.29317 -24.57059,-24.63125 -36.93261,-36.86783 -4.92821,-4.32475 -12.9887,-4.58127 -18.04983,-0.3411 -4.53572,3.50345 -6.88999,9.88482 -5.03236,15.41156 0.98198,3.38595 3.49077,6.00042 5.98204,8.36646 4.9032,4.93518 9.80639,9.87035 14.70959,14.80553 -105.65299,0 -211.30599,0 -316.95898,0 5.98401,-6.04561 12.02615,-12.03332 17.93765,-18.14946 3.46647,-4.0539 4.46136,-10.18115 2.04086,-15.00093 -2.31986,-4.98979 -7.57074,-8.6265 -13.14648,-8.50391 z"/>
-            </svg>
-          </td>
-          <td class="value"><div class="abs_value" id="v-diameter"></div><div class="rel_value" id="r-diameter"></div></td>
-        </tr>
-        <tr id="row-mass">
-          <td class="metric" title="Mass">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="#fff" aria-label="Mass"><path d="M10.85 39h26.3L34 17H14l-3.15 22ZM24 14q1.3 0 2.15-.875Q27 12.25 27 11q0-1.3-.85-2.15Q25.3 8 24 8q-1.25 0-2.125.85T21 11q0 1.25.875 2.125T24 14Zm5.2 0H34q1.15 0 2 .725.85.725 1 1.875l3.1 22q.2 1.35-.675 2.375T37.15 42h-26.3q-1.4 0-2.275-1.025T7.9 38.6l3.1-22q.15-1.15 1-1.875.85-.725 2-.725h4.8q-.4-.7-.6-1.425Q18 11.85 18 11q0-2.5 1.75-4.25T24 5q2.5 0 4.25 1.75T30 11q0 .85-.2 1.575T29.2 14ZM10.85 39h26.3Z"/></svg>
-          </td>
-          <td class="value"><div class="abs_value" id="v-mass"></div><div class="rel_value" id="r-mass"></div></td>
-        </tr>
-        <tr id="row-year">
-          <td class="metric" title="Length of year">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490.1561 443.35287" fill="#fff" aria-label="Year">
-              <g transform="rotate(135,289.74038,220.87128)">
-                <path d="m 412.57,342.57 c 23.066,-23.078 34.09,-55.57 29.824,-87.922 -4.2656,-32.348 -23.336,-60.875 -51.598,-77.184 -28.258,-16.312 -62.5,-18.551 -92.645,-6.0586 -30.145,12.488 -52.766,38.289 -61.207,69.809 -8.4414,31.52 -1.7461,65.172 18.117,91.059 19.867,25.883 50.641,41.059 83.27,41.059 27.863,0.082 54.602,-10.996 74.238,-30.762 z m -155.9,-74.238 c -0.004,-27.277 13.609,-52.754 36.289,-67.91 22.676,-15.156 51.426,-17.988 76.629,-7.5508 25.199,10.438 43.523,32.77 48.844,59.52 5.3203,26.754 -3.0664,54.398 -22.355,73.684 -15.555,14.852 -36.234,23.141 -57.742,23.141 -21.504,0 -42.184,-8.2891 -57.738,-23.141 -15.367,-15.281 -23.984,-36.07 -23.926,-57.742 z"/>
-                <path d="m 181.59,408.58 c -2.1875,2.1875 -3.418,5.1562 -3.418,8.25 0,3.0938 1.2305,6.0625 3.418,8.25 39.164,39.215 91.598,62.336 146.96,64.805 55.367,2.4727 109.65,-15.887 152.16,-51.457 42.5,-35.57 70.137,-85.773 77.457,-140.71 7.3242,-54.938 -6.1992,-110.62 -37.902,-156.09 C 488.566,96.171 440.984,64.233 386.905,52.116 332.823,39.999 276.165,48.5808 228.095,76.167 216.868,66.7178 202.552,61.741 187.884,62.187 c -14.668,0.44531 -28.656,6.2852 -39.285,16.398 -10.281,10.109 -16.469,23.66 -17.375,38.051 -0.906,14.391 3.5273,28.605 12.457,39.93 8.9297,11.32 21.723,18.949 35.93,21.418 14.203,2.4727 28.82,-0.38672 41.051,-8.0273 12.227,-7.6406 21.203,-19.523 25.211,-33.375 4.0039,-13.852 2.7578,-28.695 -3.5039,-41.684 43.223,-23.902 93.809,-30.82 141.86,-19.391 48.051,11.43 90.105,40.383 117.93,81.188 27.828,40.805 39.426,90.527 32.52,139.43 -6.9023,48.906 -31.809,93.473 -69.844,124.98 -38.035,31.508 -86.461,47.688 -135.8,45.371 -49.336,-2.3203 -96.031,-22.965 -130.95,-57.902 -2.1875,-2.1875 -5.1562,-3.418 -8.25,-3.418 -3.0977,0 -6.0625,1.2305 -8.25,3.418 z m 32.996,-264 c -6.668,6.3594 -15.531,9.9102 -24.746,9.9102 -9.2188,0 -18.082,-3.5508 -24.746,-9.9102 -6.5664,-6.5664 -10.254,-15.469 -10.254,-24.75 -0.004,-9.2852 3.6836,-18.188 10.25,-24.75 6.5625,-6.5664 15.465,-10.254 24.75,-10.254 9.2812,0 18.184,3.6875 24.746,10.254 6.5664,6.5625 10.254,15.465 10.254,24.75 -0.004,9.2812 -3.6914,18.184 -10.254,24.75 z"/>
-              </g>
-            </svg>
-          </td>
-          <td class="value"><div class="abs_value" id="v-year"></div><div class="rel_value" id="r-year"></div></td>
-        </tr>
-        <tr id="row-day">
-          <td class="metric" title="Length of day">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="#fff" viewBox="-1586.7 -1557.22 412.02 412.25" aria-label="Day">
-              <g transform="matrix(0,-1,-1,0,-1100.6885,-1000.9672)">
-                <path d="m 347.36914,74.017578 c -9.85742,0.127625 -19.70468,0.964139 -29.44336,2.494141 -17.71667,2.808327 -35.25157,7.991588 -51.67125,15.39958 -33.30309,14.889711 -62.46115,38.830961 -83.7016,68.475781 -2.40864,3.35528 -4.57923,6.58382 -6.77877,10.0499 -10.65286,16.83289 -18.93458,35.35487 -24.27829,54.61498 -0.51656,1.85497 -1.01987,3.75749 -1.4606,5.54036 -2.77521,11.13965 -4.58581,22.51613 -5.45519,33.96237 -0.0634,1.00538 -0.15363,2.28278 -0.22656,3.39258 -0.0694,1.48889 -0.16391,2.94964 -0.20581,4.35879 -0.22632,6.04219 -0.18206,12.09859 0.11673,18.09101 0.59362,11.79261 2.21876,23.68658 4.8766,35.25699 0.47693,2.09649 0.97363,4.11751 1.50327,6.14518 1.03225,3.9447 2.13777,7.73089 3.40617,11.62321 5.68484,17.4248 13.73511,34.07048 23.8089,49.38028 0.98331,1.47248 2.08262,3.11508 3.14842,4.62947 16.57751,23.75154 38.16171,43.98604 62.94728,58.976 17.09502,10.33224 35.84553,18.26838 55.2712,23.21276 2.25693,0.5786 4.76804,1.17488 7.14584,1.69106 9.28262,2.02795 18.7092,3.38584 28.18257,4.1079 1.00538,0.0634 2.28278,0.15363 3.39258,0.22656 1.48889,0.0694 2.94964,0.16391 4.35879,0.20581 7.04855,0.26578 14.21409,0.1518 21.18808,-0.28979 12.71041,-0.81609 25.34401,-2.81447 37.6875,-5.95312 1.49296,-0.3774 3.0301,-0.79036 4.54068,-1.21077 32.29198,-8.98061 62.29551,-26.00618 86.60095,-49.08218 20.58912,-19.46091 37.11831,-43.19738 48.17747,-69.28336 0.53536,-1.25883 1.09812,-2.62578 1.60962,-3.89938 2.72934,-6.79359 5.07316,-13.73981 7.07323,-20.78213 0.31104,-1.17133 0.71642,-2.57295 1.03528,-3.84321 0.78282,-2.99936 1.51809,-6.08585 2.1421,-9.03562 1.83063,-8.5292 3.10707,-17.17898 3.86755,-25.86726 0.0422,-3.82758 -2.23579,-7.36019 -5.33044,-9.47804 -2.73738,-1.94037 -6.01928,-3.26869 -9.39843,-3.35501 -3.49325,0.009 -6.76907,1.91847 -8.85954,4.65728 -2.3668,2.94275 -3.75528,6.64283 -3.93749,10.41285 -2.98272,27.10855 -12.09051,53.5518 -26.65888,76.62166 -15.81593,25.13949 -38.01029,46.22677 -63.94385,60.70918 -23.95621,13.42953 -51.04431,21.17975 -78.46712,22.57466 -25.38374,1.35781 -51.06178,-2.72135 -74.71283,-12.06437 -27.83209,-10.93349 -52.80585,-28.98538 -72.00666,-51.90106 -17.80108,-21.18249 -30.66148,-46.51719 -37.06204,-73.44653 -7.74103,-32.37955 -6.18566,-66.9368 4.5527,-98.45782 10.16187,-30.04865 28.54458,-57.22609 52.50556,-77.99399 22.3672,-19.45507 49.60845,-33.30233 78.57214,-39.68065 30.92291,-6.857389 63.66989,-5.284482 93.78452,4.53941 28.67063,9.30037 54.88284,26.04905 75.35484,48.1738 15.54837,16.74928 27.77782,36.53614 35.95808,57.86756 2.48315,5.81185 9.12046,9.77667 15.42699,8.58173 7.06107,-1.47937 12.23373,-9.10623 10.8512,-16.21377 -0.17761,-1.08514 -0.76945,-2.08858 -0.85727,-3.1758 0.0563,-0.74372 0.0187,-1.48907 -0.37256,-2.14428 -4.64082,-11.57876 -10.32646,-22.73989 -16.98096,-33.29126 -0.81618,-1.2829 -1.76067,-2.7572 -2.65342,-4.09566 -14.56291,-21.95954 -33.45385,-41.02159 -55.24697,-55.82817 -1.41259,-0.95143 -3.0058,-2.01344 -4.50976,-2.97595 -2.57837,-1.65014 -5.35469,-3.34915 -8.02028,-4.88728 -2.59501,-1.50137 -5.41495,-3.044756 -8.14989,-4.470188 -2.87342,-1.489539 -5.85786,-2.95752 -8.7212,-4.266817 -14.79083,-6.822474 -30.3974,-11.865947 -46.37621,-15.022814 -7.86046,-1.551784 -15.96177,-2.683155 -24.00845,-3.316937 -6.4598,-0.518966 -13.04217,-0.73572 -19.59116,-0.659626 z"/>
-                <path d="m 541.67578,101.02344 c -5.07539,0.20125 -9.75416,3.6719 -11.6334,8.3582 -0.99843,2.31849 -1.14358,4.87643 -1.04238,7.36602 0,29.75078 0,59.50156 0,89.25234 -30.78995,0.009 -61.58053,-0.0268 -92.37008,0.0256 -4.25373,0.11173 -8.67306,2.14372 -10.7834,5.97551 -2.20823,3.93498 -2.34197,8.82951 -0.92309,13.05332 1.23727,3.45548 4.16189,6.22659 7.68985,7.25221 3.57806,1.07472 7.35243,0.58504 11.02734,0.69351 33.21968,-0.002 66.43983,0.013 99.6592,-0.0223 4.17589,-0.0969 8.50463,-2.02111 10.69907,-5.70121 1.812,-2.92053 2.13634,-6.4578 2.00114,-9.81691 -0.002,-34.51926 0.0124,-69.0391 -0.0211,-103.55799 -0.23649,-6.04958 -4.96523,-11.71008 -11.00235,-12.6812 -1.08784,-0.19291 -2.19794,-0.24816 -3.30084,-0.19714 z"/>
-              </g>
-            </svg>
-          </td>
-          <td class="value"><div class="abs_value" id="v-day"></div><div class="rel_value" id="r-day"></div></td>
-        </tr>
-        <tr id="row-moons">
-          <td class="metric" title="Known moons">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="#fff" viewBox="96.12 25.95 507.8 508.12" aria-label="Moons">
-              <path d="m290.19 26.727c-111.64 28.281-194.07 129.52-194.07 249.73 0 142.07 115.53 257.6 257.6 257.6 120.2 0 221.44-82.613 249.73-194.25 1.7344-7.0195-1.668-14.992-7.9375-18.598-6.2695-3.6055-14.871-2.5352-20.062 2.4961-34.297 33.129-80.664 53.551-132.12 53.551-105.36 0-190.4-85.047-190.4-190.4 0-51.461 20.422-98.004 53.551-132.3 4.6055-4.8438 5.875-12.566 3.0664-18.633-5.1562-9.2383-11.312-11.348-19.344-9.1914zm-42.523 53.199c-17.488 31.879-28.352 68.059-28.352 106.93 0 123.51 100.49 224 224 224 38.953 0 75-10.965 106.93-28.523-37.82 70.059-111.15 118.12-196.52 118.12-123.91 0-224-100.09-224-224 0-85.32 47.969-158.68 117.95-196.52z"/>
-            </svg>
-          </td>
-          <td class="value"><div class="abs_value" id="v-moons"></div><div class="rel_value" id="r-moons"></div></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- ═══════════════════════════════════════════
-       DETAIL PANEL (right side)
-  ══════════════════════════════�����════════════ -->
-  <div id="info-panel" class="hidden">
-
-    <button id="info-close" title="Close">✕</button>
-
-    <div class="info-hero">
-      <div class="info-icon" id="info-icon">🌍</div>
-      <div class="info-title-wrap">
-        <h2 id="info-name">Earth</h2>
-        <span class="info-badge" id="info-type">Planet</span>
-      </div>
-    </div>
-
-    <p id="info-description"></p>
-
-    <div class="info-stats-grid" id="info-stats"></div>
-
-    <section id="surface-explorer" class="surface-explorer hidden" aria-labelledby="surface-title">
-      <div class="surface-heading">
-        <div>
-          <span class="surface-eyebrow">IMMERSIVE TERRAIN</span>
-          <h3 id="surface-title">Surface exploration</h3>
-        </div>
-        <span id="surface-availability" class="surface-badge">READY</span>
-      </div>
-      <p id="surface-summary">Land on this world using adaptive 8K terrain and WebXR-ready controls.</p>
-      <div class="surface-status-grid">
-        <div><span>QUALITY</span><strong id="surface-quality">Detecting GPU…</strong></div>
-        <div><span>SOURCE</span><strong id="surface-source">NASA imagery</strong></div>
-      </div>
-      <div id="surface-progress-wrap" class="surface-progress-wrap" hidden>
-        <div class="surface-progress"><span id="surface-progress"></span></div>
-        <p id="surface-message" role="status" aria-live="polite">Preparing terrain…</p>
-      </div>
-      <div class="surface-actions">
-        <button id="btn-land" class="action-btn primary" type="button">Land on surface</button>
-        <button id="btn-return-orbit" class="action-btn secondary" type="button" hidden>Return to orbit</button>
-      </div>
     </section>
 
-    <section id="info-media" class="info-media hidden" aria-label="Official video and resources">
-      <div class="media-heading">
-        <span>MISSION VIDEO</span>
-        <span id="media-quality"></span>
-      </div>
-      <div id="media-title" class="media-title"></div>
-      <div class="video-frame">
-        <iframe
-          id="info-video"
-          title="Official space video"
-          loading="lazy"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen
-        ></iframe>
-      </div>
-      <nav id="info-links" class="info-links" aria-label="More information"></nav>
-    </section>
-
-    <section id="latest-developments" class="latest-dev hidden" aria-label="Latest developments from NASA">
-      <div class="news-heading">
-        <span>LATEST DEVELOPMENTS</span>
-        <a class="news-rss-link" href="https://www.nasa.gov/news-release/feed/" target="_blank" rel="noopener noreferrer">RSS</a>
-      </div>
-      <div class="news-feed" id="news-feed"></div>
-    </section>
-
-  </div><!-- /#info-panel -->
-
-  <!-- ═══════════════════════════════════════════
-       OBJECT ACTIONS (floating bottom-center bar)
-  ═══════════════════════════════════════════ -->
-  <div id="obj-actions" class="hidden">
-    <button id="btn-fly-to" class="action-btn primary">Fly There</button>
-    <button id="btn-focus" class="action-btn secondary">Focus</button>
-  </div>
-
-  <!-- ═══════════════════════════════════════════
-       ABOUT MODAL
-  ═══════════════════════════════════════════ -->
-  <div id="about-modal" class="modal-backdrop" hidden>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="about-title">
-      <button id="about-close" class="modal-close" type="button" aria-label="Close">✕</button>
-      <h3 id="about-title">About this project</h3>
+    <aside id="about-panel" class="about-panel" popover aria-labelledby="about-title">
+      <button class="about-close" type="button" popovertarget="about-panel" popovertargetaction="hide" aria-label="Close about panel">×</button>
+      <p class="about-eyebrow">The experience</p>
+      <h1 id="about-title">About this project</h1>
       <p>This is an interactive model of the solar system that is quite, but not entirely, realistic.</p>
       <p>The vast distances and differences in space and time that are present in the real solar system can make observation boring or intimidating. This model contains real data and real orbital math; but distances and differences in space and time are algorithmically reduced to make the exploration experience more interesting and fun.</p>
-      <h4>Key features</h4>
+      <h2>Key features</h2>
       <ul>
-        <li>all major celestial objects with real characteristics and 8K NASA textures,</li>
-        <li>realistic Milky Way background (8K photographic sky),</li>
-        <li>live Earth cloud imagery, updated daily,</li>
-        <li>ability to focus on, zoom and pan around celestial objects,</li>
-        <li>panel showing absolute values and values relative to Earth's,</li>
-        <li>immersive planetary surface exploration and WebXR VR support.</li>
+        <li>All major celestial objects with real characteristics and 8K NASA textures</li>
+        <li>A realistic Milky Way background and daily Earth cloud imagery</li>
+        <li>Focused, immersive exploration with WebXR VR support</li>
       </ul>
-      <h4>Controls</h4>
-      <ul>
-        <li>Click an object to inspect it (or select it in the Camera drop-down)</li>
-        <li>Drag to pan · scroll or pinch to zoom</li>
-        <li>Click empty space to return</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════
-       BOTTOM-RIGHT READOUT (sim clock)
-  ═══════════════════════════════════════════ -->
-  <div id="bottom-readout">
-    <span id="sim-date"></span>
-    <span id="current-date"></span>
-  </div>
-
-  <!-- ═══════════════════════════════════════════
-       TOOLTIP
-  ═══════════════════════════════════════════ -->
-  <div id="tooltip" role="tooltip"></div>
-
-  <!-- ═══════════════════════════════════════════
-       IMPORT MAP + APP ENTRY
-  ═══════════════════════════════════════════ -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-      "3d-tiles-renderer/three": "https://esm.sh/3d-tiles-renderer@0.5.1/three?external=three"
-    }
-  }
-  </script>
-  <script type="module" src="js/app.js"></script>
-
+    </aside>
+  </main>
 </body>
 </html>

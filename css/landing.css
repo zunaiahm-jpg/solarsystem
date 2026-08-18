@@ -1,0 +1,168 @@
+@layer reset, base, components;
+
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  button, a { font: inherit; }
+}
+
+@layer base {
+  :root {
+    --space: #05070a;
+    --surface: #111318;
+    --text: #f7f8fa;
+    --muted: #a8abb2;
+    --solar: #eaa33c;
+  }
+
+  html { background: var(--space); }
+
+  body {
+    min-height: 100svh;
+    overflow: hidden;
+    background: var(--space);
+    color: var(--text);
+    font-family: 'Jura', 'Gill Sans', sans-serif;
+  }
+}
+
+@layer components {
+  .landing-shell {
+    position: relative;
+    display: flex;
+    min-height: 100svh;
+    align-items: center;
+    justify-content: center;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .landing-art,
+  .landing-shade {
+    position: absolute;
+    inset: 0;
+  }
+
+  .landing-art {
+    z-index: -2;
+    background: var(--space) url('../assets/landing/solar-horizon.png') center / cover no-repeat;
+    transform: scale(1.02);
+    animation: reveal 1.8s ease-out both;
+  }
+
+  .landing-shade {
+    z-index: -1;
+    background: linear-gradient(180deg, rgba(5, 7, 10, 0.36), transparent 35%, rgba(5, 7, 10, 0.22) 72%, rgba(5, 7, 10, 0.82));
+  }
+
+  .landing-header {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    padding: 6vw;
+  }
+
+  .about-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .about-mark {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid rgba(247, 248, 250, 0.52);
+    border-radius: 50%;
+  }
+
+  .landing-entry {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    transform: translateY(12vh);
+  }
+
+  .explore-button {
+    display: flex;
+    min-width: min(84vw, 330px);
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 24px;
+    border: 1px solid rgba(247, 248, 250, 0.66);
+    border-radius: 999px;
+    background: rgba(17, 19, 24, 0.55);
+    box-shadow: 0 18px 60px rgba(5, 7, 10, 0.42);
+    backdrop-filter: blur(16px);
+    color: var(--text);
+    font-size: clamp(15px, 2vw, 18px);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+  }
+
+  .explore-button:hover {
+    background: var(--text);
+    color: var(--space);
+    transform: translateY(-3px);
+  }
+
+  .explore-arrow { font-size: 24px; line-height: 1; }
+
+  .about-trigger:focus-visible,
+  .explore-button:focus-visible,
+  .about-close:focus-visible {
+    outline: 2px solid var(--solar);
+    outline-offset: 4px;
+  }
+
+  .about-panel {
+    width: min(92vw, 560px);
+    max-height: min(82svh, 680px);
+    margin: auto;
+    padding: 36px;
+    overflow: auto;
+    border: 1px solid rgba(247, 248, 250, 0.16);
+    border-radius: 20px;
+    background: rgba(17, 19, 24, 0.94);
+    box-shadow: 0 30px 100px rgba(5, 7, 10, 0.75);
+    backdrop-filter: blur(24px);
+    color: var(--text);
+  }
+
+  .about-panel::backdrop { background: rgba(5, 7, 10, 0.72); backdrop-filter: blur(5px); }
+  .about-panel h1 { margin: 6px 40px 22px 0; font-size: clamp(28px, 6vw, 46px); line-height: 1.05; text-wrap: balance; }
+  .about-panel h2 { margin: 28px 0 10px; font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .about-panel p, .about-panel li { color: var(--muted); font-size: 14px; line-height: 1.6; }
+  .about-panel ul { display: grid; gap: 8px; padding-left: 18px; }
+  .about-eyebrow { margin: 0; color: var(--solar) !important; letter-spacing: 0.16em; text-transform: uppercase; }
+  .about-close { position: absolute; top: 18px; right: 18px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 28px; }
+
+  @media (min-width: 720px) {
+    .landing-header { padding: 40px 48px; }
+    .landing-entry { transform: translateY(16vh); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing-art { animation: none; }
+    .explore-button { transition: none; }
+  }
+
+  @keyframes reveal {
+    from { opacity: 0; transform: scale(1.08); }
+    to { opacity: 1; transform: scale(1.02); }
+  }
+}

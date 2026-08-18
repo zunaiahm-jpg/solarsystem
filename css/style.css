@@ -338,6 +338,11 @@ body.controls-closed #controls-rail { opacity: 1; pointer-events: auto; transfor
   cursor: pointer;
 }
 #camera-select:hover, #camera-select:focus-visible { border-color: rgba(255, 255, 255, 0.38); }
+#camera-select,
+#camera-select option {
+  background-color: rgb(17, 19, 24);
+  color: #fff;
+}
 
 .s-row input[type="checkbox"] {
   appearance: none;
@@ -989,7 +994,7 @@ body.xr-presenting #bottom-readout,
 body.xr-presenting #asset-credits,
 body.xr-presenting .corner-icon { display: none !important; }
 
-/* ════════════════════════════════════════════════════════════
+/* ═══════���════════════════════════════════════════════════════
    IMMERSIVE SURFACE EXPLORATION (inside detail panel)
 ════════════════════════════════════════════════════════════ */
 .surface-explorer {
