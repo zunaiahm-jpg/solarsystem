@@ -39,14 +39,13 @@
     overflow: hidden;
   }
 
-  .landing-art,
   .landing-video,
   .landing-shade {
     position: absolute;
     inset: 0;
   }
 
-  /* YouTube background: sits above the still image, below the shade */
+  /* YouTube background: fills the shell, below the shade */
   .landing-video {
     z-index: -2;
     overflow: hidden;
@@ -72,11 +71,8 @@
     border: 0;
   }
 
-  .landing-art {
-    z-index: -3;
-    background: var(--space) url('../assets/landing/space-explorer.png') center / cover no-repeat;
-    transform: scale(1.02);
-    animation: reveal 1.8s ease-out both;
+  .landing-shell {
+    background: var(--space);
   }
 
   .landing-shade {
@@ -194,8 +190,6 @@
     color: var(--text);
     transform: translateY(-3px);
   }
-
-  .play-mark { font-size: 14px; line-height: 1; }
 
   .about-trigger:focus-visible,
   .explore-button:focus-visible,
@@ -440,13 +434,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .landing-art { animation: none; }
     .landing-video { display: none; }
     .explore-button { transition: none; }
-  }
-
-  @keyframes reveal {
-    from { opacity: 0; transform: scale(1.08); }
-    to { opacity: 1; transform: scale(1.02); }
   }
 }
