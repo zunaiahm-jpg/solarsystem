@@ -177,8 +177,51 @@
     transform: translateY(-3px);
   }
 
+  .volume-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 11px 20px;
+    border: 1px solid rgba(247, 248, 250, 0.28);
+    border-radius: 0;
+    background: rgba(5, 7, 10, 0.42);
+    backdrop-filter: blur(10px);
+    color: var(--muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
+  }
+
+  .volume-button:hover {
+    border-color: rgba(247, 248, 250, 0.5);
+    color: var(--text);
+  }
+
+  .volume-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .volume-button .icon-on { display: none; }
+  .volume-button .icon-off { display: block; }
+
+  .volume-button.is-on {
+    border-color: var(--solar);
+    color: var(--solar);
+  }
+
+  .volume-button.is-on .icon-on { display: block; }
+  .volume-button.is-on .icon-off { display: none; }
+
   .about-trigger:focus-visible,
   .explore-button:focus-visible,
+  .volume-button:focus-visible,
   .about-close:focus-visible {
     outline: 2px solid var(--solar);
     outline-offset: 4px;

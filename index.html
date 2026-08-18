@@ -41,6 +41,29 @@
       <a class="explore-button" href="/explorer.html">
         <span>Launch Solaris</span>
       </a>
+
+      <button
+        id="volume-toggle"
+        class="volume-button"
+        type="button"
+        aria-pressed="false"
+        aria-label="Turn ambient sound on"
+      >
+        <span class="volume-icon" aria-hidden="true">
+          <svg class="icon-on" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5 6 9H3v6h3l5 4z" />
+            <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+            <path d="M18.5 5.5a9 9 0 0 1 0 13" />
+          </svg>
+          <svg class="icon-off" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5 6 9H3v6h3l5 4z" />
+            <path d="m16 9 5 6" />
+            <path d="m21 9-5 6" />
+          </svg>
+        </span>
+        <span class="volume-label">Sound off</span>
+      </button>
+
       <a class="scroll-cue" href="#features" aria-label="Scroll to learn more">Discover more ↓</a>
     </section>
   </main>
@@ -231,5 +254,44 @@
     <h2>Contact</h2>
     <p><a class="about-link" href="mailto:solaristrekk@gmail.com">solaristrekk@gmail.com</a></p>
   </aside>
+
+  <audio id="ambient-audio" src="assets/audio/solaris-theme.mp3" loop preload="auto"></audio>
+
+  <script>
+    (function () {
+      var audio = document.getElementById('ambient-audio');
+      var button = document.getElementById('volume-toggle');
+      if (!audio || !button) return;
+
+      var label = button.querySelector('.volume-label');
+      audio.volume = 0.6;
+
+      function render(on) {
+        button.classList.toggle('is-on', on);
+        button.setAttribute('aria-pressed', String(on));
+        button.setAttribute('aria-label', on ? 'Turn ambient sound off' : 'Turn ambient sound on');
+        if (label) label.textContent = on ? 'Sound on' : 'Sound off';
+      }
+
+      button.addEventListener('click', function () {
+        if (audio.paused) {
+          var attempt = audio.play();
+          if (attempt && typeof attempt.then === 'function') {
+            attempt.then(function () { render(true); }).catch(function () { render(false); });
+          } else {
+            render(true);
+          }
+        } else {
+          audio.pause();
+          render(false);
+        }
+      });
+
+      audio.addEventListener('pause', function () { render(false); });
+      audio.addEventListener('play', function () { render(true); });
+
+      render(false);
+    })();
+  </script>
 </body>
 </html>
