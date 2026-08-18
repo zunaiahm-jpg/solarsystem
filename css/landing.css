@@ -45,22 +45,33 @@
 
   .landing-art {
     z-index: -2;
-    background: var(--space) url('../assets/landing/solar-horizon.png') center / cover no-repeat;
+    background: var(--space) url('../assets/landing/space-explorer.png') center / cover no-repeat;
     transform: scale(1.02);
     animation: reveal 1.8s ease-out both;
   }
 
   .landing-shade {
     z-index: -1;
-    background: linear-gradient(180deg, rgba(5, 7, 10, 0.36), transparent 35%, rgba(5, 7, 10, 0.22) 72%, rgba(5, 7, 10, 0.82));
+    background: linear-gradient(180deg, rgba(5, 7, 10, 0.2), transparent 48%, rgba(5, 7, 10, 0.9));
   }
 
   .landing-header {
     position: absolute;
     top: 0;
     right: 0;
+    left: 0;
     display: flex;
-    padding: 6vw;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px;
+  }
+
+  .brand {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-decoration: none;
   }
 
   .about-trigger {
@@ -77,50 +88,41 @@
     text-transform: uppercase;
   }
 
-  .about-mark {
-    display: grid;
-    width: 34px;
-    height: 34px;
-    place-items: center;
-    border: 1px solid rgba(247, 248, 250, 0.52);
-    border-radius: 50%;
-  }
-
   .landing-entry {
     display: flex;
-    align-items: center;
+    min-height: 100svh;
+    align-items: flex-end;
     justify-content: center;
-    padding: 24px;
-    transform: translateY(12vh);
+    padding: 24px 24px 48px;
   }
 
   .explore-button {
     display: flex;
-    min-width: min(84vw, 330px);
+    width: min(88vw, 450px);
     align-items: center;
-    justify-content: space-between;
-    gap: 24px;
+    justify-content: center;
+    gap: 16px;
     padding: 20px 24px;
-    border: 1px solid rgba(247, 248, 250, 0.66);
-    border-radius: 999px;
-    background: rgba(17, 19, 24, 0.55);
-    box-shadow: 0 18px 60px rgba(5, 7, 10, 0.42);
-    backdrop-filter: blur(16px);
-    color: var(--text);
-    font-size: clamp(15px, 2vw, 18px);
+    border: 1px solid var(--text);
+    border-radius: 0;
+    background: var(--text);
+    box-shadow: 0 18px 60px rgba(5, 7, 10, 0.5);
+    color: var(--space);
+    font-size: clamp(14px, 2vw, 17px);
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.1em;
     text-decoration: none;
+    text-transform: uppercase;
     transition: background 180ms ease, color 180ms ease, transform 180ms ease;
   }
 
   .explore-button:hover {
-    background: var(--text);
-    color: var(--space);
+    background: rgba(17, 19, 24, 0.86);
+    color: var(--text);
     transform: translateY(-3px);
   }
 
-  .explore-arrow { font-size: 24px; line-height: 1; }
+  .play-mark { font-size: 14px; line-height: 1; }
 
   .about-trigger:focus-visible,
   .explore-button:focus-visible,
@@ -152,8 +154,8 @@
   .about-close { position: absolute; top: 18px; right: 18px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 28px; }
 
   @media (min-width: 720px) {
-    .landing-header { padding: 40px 48px; }
-    .landing-entry { transform: translateY(16vh); }
+    .landing-header { padding: 32px 48px; }
+    .landing-entry { padding-bottom: 56px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
