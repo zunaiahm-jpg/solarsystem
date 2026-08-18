@@ -98,8 +98,33 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(2, 2, 2, 0.28);
+  padding: clamp(16px, 3vw, 48px);
+  background: #061b26;
   transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.landing-frame {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  width: min(1500px, 100%);
+  height: min(900px, 100%);
+  overflow: hidden;
+  padding: clamp(28px, 6vw, 88px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 28px;
+  background:
+    linear-gradient(90deg, rgba(2, 8, 12, 0.92) 0%, rgba(2, 8, 12, 0.54) 37%, rgba(2, 8, 12, 0.06) 68%),
+    url('../assets/solar-landing.png') center / cover no-repeat;
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.48);
+}
+
+.landing-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(2, 8, 12, 0.08), rgba(2, 8, 12, 0.34));
 }
 #loading-screen.fade-out {
   opacity: 0;
@@ -121,50 +146,76 @@ body:not(.app-started) #asset-credits {
 }
 
 .splash-inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-align: center;
-  animation: fadeIn 0.6s ease both;
+  align-items: flex-start;
+  gap: 18px;
+  width: min(560px, 100%);
+  text-align: left;
+  animation: fadeIn 0.8s ease both;
+}
+
+.splash-kicker {
+  color: #aebbc1;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 .splash-title {
   font-family: var(--font-head);
-  font-size: clamp(26px, 4.6vw, 40px);
-  font-weight: 700;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
+  font-size: clamp(40px, 6vw, 84px);
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.045em;
   color: #fff;
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 4px 28px rgba(0, 0, 0, 0.72);
 }
 
-.splash-subtitle {
-  font-family: var(--font-body);
-  font-size: clamp(14px, 2.2vw, 21px);
-  font-weight: 400;
-  color: #b5b5b5;
-  margin-top: -6px;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8);
+.splash-about {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(480px, 100%);
+  color: #bec8cd;
+  font-size: 14px;
+  line-height: 1.6;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.88);
+}
+
+.splash-about h2 {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* Pill Start button with integrated progress fill (jaksic .progress) */
 #start-btn.progress {
-  display: inline-block;
-  margin-top: 18px;
-  font-size: 18px;
-  font-weight: 500;
-  color: #ffffff;
-  text-decoration: none;
-  padding: 10px 74px;
-  line-height: 1;
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: min(100%, 340px);
+  min-height: 64px;
   overflow: hidden;
   border: 1px solid #ffffff;
-  border-radius: 15px;
-  background: rgba(0, 0, 0, 0.32);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.10);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-decoration: none;
   cursor: pointer;
-  transition: box-shadow 0.5s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.5s ease, transform 0.3s ease;
 }
 #start-btn.progress:hover,
 #start-btn.progress:focus {
@@ -338,6 +389,10 @@ body.controls-closed #controls-rail { opacity: 1; pointer-events: auto; transfor
   cursor: pointer;
 }
 #camera-select:hover, #camera-select:focus-visible { border-color: rgba(255, 255, 255, 0.38); }
+#camera-select option {
+  background: #111318;
+  color: #ebebeb;
+}
 
 .s-row input[type="checkbox"] {
   appearance: none;
@@ -989,7 +1044,7 @@ body.xr-presenting #bottom-readout,
 body.xr-presenting #asset-credits,
 body.xr-presenting .corner-icon { display: none !important; }
 
-/* ════════════════════════════════════════════════════════════
+/* ═══════���════════════════════════════════════════════════════
    IMMERSIVE SURFACE EXPLORATION (inside detail panel)
 ════════════════════════════════════════════════════════════ */
 .surface-explorer {

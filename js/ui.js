@@ -170,7 +170,7 @@ function startLoadingSequence(onLoaded) {
     const pct = Math.min(100, Math.round(value * 100));
     if (bar) bar.style.width = `${pct}%`;
     if (text && message) text.textContent = message;
-    if (startLabel && !ready) startLabel.textContent = pct > 2 ? `Start ${pct}%` : 'Start';
+    if (startLabel && !ready) startLabel.textContent = pct > 2 ? `Preparing ${pct}%` : 'Explore Solarsystem';
   };
 
   const enter = () => {
@@ -185,11 +185,11 @@ function startLoadingSequence(onLoaded) {
     }, 800);
   };
 
-  const markReady = (message = 'Visual systems online — press Start') => {
+  const markReady = (message = 'Visual systems online — ready to explore') => {
     if (ready) return;
     ready = true;
     setProgress(1, message);
-    if (startLabel) startLabel.textContent = 'Start';
+    if (startLabel) startLabel.textContent = 'Explore Solarsystem';
     startBtn?.classList.add('ready');
     if (wantsEnter) enter();
   };

@@ -19,18 +19,23 @@
   <!-- ═══════════════════════════════════════════
        SPLASH SCREEN (jaksic-style)
   ═══════════════════════════════════════════ -->
-  <div id="loading-screen">
-    <div class="splash-inner">
-      <h3 class="splash-title">Solar System</h3>
-      <p class="splash-subtitle">A semi-realistic model in 8K</p>
-      <a href="#" id="start-btn" class="progress" role="button" aria-label="Start the experience">
-        <span id="start-label">Start</span>
-        <span id="loader-progress" class="tz-bar background-horizontal"></span>
-      </a>
-      <p id="loader-text" class="loader-status">Initializing…</p>
-      <p class="splash-proof">8K NASA textures · Live Earth clouds · WebXR VR</p>
+  <main id="loading-screen">
+    <div class="landing-frame">
+      <div class="splash-inner">
+        <p class="splash-kicker">Interactive space experience</p>
+        <h1 class="splash-title">The solar system,<br />within reach.</h1>
+        <div class="splash-about" aria-labelledby="landing-about-title">
+          <h2 id="landing-about-title">About the experience</h2>
+          <p>This interactive model uses real data and orbital mathematics, with the immense scales of space thoughtfully adapted to make exploration clear, engaging, and fun.</p>
+        </div>
+        <a href="#space-canvas" id="start-btn" class="progress" role="button" aria-label="Explore Solar System">
+          <span id="start-label">Explore Solarsystem</span>
+          <span id="loader-progress" class="tz-bar background-horizontal"></span>
+        </a>
+        <p id="loader-text" class="loader-status" aria-live="polite">Initializing the experience…</p>
+      </div>
     </div>
-  </div>
+  </main>
 
   <!-- ═══════════════════════════════════════════
        THREE.JS CANVAS
