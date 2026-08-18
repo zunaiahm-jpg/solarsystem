@@ -112,14 +112,18 @@ function setupSettingsPanel() {
   const panel = document.getElementById('settings-panel');
   const bodyToggle = document.getElementById('settings-toggle');
   const controlsToggle = document.getElementById('controls-toggle');
+  const controlsRail = document.getElementById('controls-rail');
 
   const setClosed = (closed) => {
     panel?.classList.toggle('body-closed', closed);
-    if (bodyToggle) bodyToggle.setAttribute('aria-expanded', String(!closed));
-    if (controlsToggle) controlsToggle.textContent = closed ? 'Open controls' : 'Close controls';
+    document.body.classList.toggle('controls-closed', closed);
+    bodyToggle?.setAttribute('aria-expanded', String(!closed));
+    controlsToggle?.setAttribute('aria-expanded', String(!closed));
+    controlsRail?.setAttribute('aria-expanded', String(!closed));
   };
   bodyToggle?.addEventListener('click', () => setClosed(!panel?.classList.contains('body-closed')));
-  controlsToggle?.addEventListener('click', () => setClosed(!panel?.classList.contains('body-closed')));
+  controlsToggle?.addEventListener('click', () => setClosed(true));
+  controlsRail?.addEventListener('click', () => setClosed(false));
 
   // Info checkbox toggles the bottom-left stats table
   const infoToggle = document.getElementById('toggle-info');

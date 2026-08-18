@@ -57,10 +57,23 @@
   </div>
 
   <!-- ═══════════════════════════════════════════
-       SETTINGS PANEL (top-right, lil-gui style)
+       SETTINGS PANEL (left-side command palette)
   ═══════════════════════════════════════════ -->
+  <button id="controls-rail" type="button" aria-controls="settings-panel" aria-expanded="true" aria-label="Open controls" title="Open controls">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 7h10M18 7h2M4 17h2M10 17h10M4 12h4M12 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="16" cy="7" r="2" stroke="currentColor" stroke-width="1.8"/>
+      <circle cx="8" cy="17" r="2" stroke="currentColor" stroke-width="1.8"/>
+      <circle cx="10" cy="12" r="2" stroke="currentColor" stroke-width="1.8"/>
+    </svg>
+    <span class="sr-only">Open controls</span>
+  </button>
+
   <div id="settings-panel">
-    <button id="settings-toggle" type="button" aria-expanded="true"><span class="caret">▸</span> Settings</button>
+    <button id="settings-toggle" type="button" aria-controls="settings-body" aria-expanded="true">
+      <span class="settings-heading"><span class="settings-kicker">Navigation</span><span>Settings</span></span>
+      <span class="caret" aria-hidden="true">▸</span>
+    </button>
     <div id="settings-body">
 
       <label class="s-row" for="camera-select">
@@ -109,7 +122,7 @@
       <button class="s-btn" id="btn-about" type="button">About</button>
 
     </div>
-    <button id="controls-toggle" type="button">Close controls</button>
+    <button id="controls-toggle" type="button" aria-controls="settings-panel" aria-expanded="true"><span aria-hidden="true">←</span> Close controls</button>
   </div>
 
   <!-- ═══════════════════════════════════════════
@@ -182,7 +195,7 @@
 
   <!-- ═══════════════════════════════════════════
        DETAIL PANEL (right side)
-  ══════════════════════════════���════════════ -->
+  ══════════════════════════════�����════════════ -->
   <div id="info-panel" class="hidden">
 
     <button id="info-close" title="Close">✕</button>
