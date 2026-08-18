@@ -1,8 +1,8 @@
-import { OBJECT_MEDIA, OBJECT_METRICS, EARTH_METRICS, SEARCHABLE_OBJECTS } from './data.js?v=jaksic-1';
-import { loadLatestNews, renderNewsFeed } from './news.js?v=jaksic-1';
+import { OBJECT_MEDIA, OBJECT_METRICS, EARTH_METRICS, SEARCHABLE_OBJECTS } from './data.js';
+import { loadLatestNews, renderNewsFeed } from './news.js';
 import * as THREE from 'three';
 
-let camera, controls;
+let controls;
 let onFlyTo = null;
 let selectedObject = null;
 let timeScale = 1;
@@ -12,7 +12,6 @@ let surfaceSupported = () => false;
 
 // ---- Setup ----
 export function setupUI(opts) {
-  camera = opts.camera;
   controls = opts.controls;
   onFlyTo = opts.flyToCallback;
   onLandSurface = opts.onLandSurface;
@@ -617,32 +616,6 @@ function updateDate() {
     });
     el.textContent = `LIVE ${liveDate} · ${liveTime}`;
   }
-}
-
-export function updateCoordinates(camPos) {
-  const ra = document.getElementById('coord-ra');
-  const dec = document.getElementById('coord-dec');
-  const dist = document.getElementById('coord-dist');
-  if (ra) ra.textContent = `RA: ${(camPos.x * 0.1).toFixed(1)}°`;
-  if (dec) dec.textContent = `Dec: ${(camPos.y * 0.1).toFixed(1)}°`;
-  const d = camPos.length();
-  if (dist) dist.textContent = `Dist: ${(d / 15).toFixed(1)} AU`;
-}
-
-export function updateZoomLevel(camDist) {
-  const ind = document.getElementById('zoom-indicator');
-  if (!ind) return;
-  const minLog = Math.log(5), maxLog = Math.log(8000);
-  const currentLog = Math.log(Math.max(5, camDist));
-  const pct = 1 - (currentLog - minLog) / (maxLog - minLog);
-  ind.style.height = Math.min(100, Math.max(0, pct * 100)) + '%';
-}
-
-export function updateCompass(camera) {
-  const needle = document.getElementById('compass-needle');
-  if (!needle) return;
-  const angle = Math.atan2(camera.position.x, camera.position.z);
-  needle.style.transform = `rotate(${angle}rad)`;
 }
 
 export function setupViewButtons(callbacks) {
