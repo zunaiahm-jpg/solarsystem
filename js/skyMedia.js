@@ -1,11 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // skyMedia.js — the all-sky plate pipeline
 //
-// The sky is loaded in escalating tiers so the scene is never empty and never
-// blurrier than the hardware can actually display:
+// Exactly one still plate is fetched — the best one the hardware can display —
+// and lower tiers are requested only if that download or decode fails:
 //
-//   1. 4K NASA plate  — decoded first, appears almost instantly.
-//   2. 8K NASA plate  — swapped in once decoded, if the GPU can sample it.
+//   1. 8K NASA plate  — used when the GPU and memory budget allow it.
+//   2. 4K NASA plate  — fallback for smaller GPUs, or if the 8K plate fails.
 //   3. Looping video  — swapped in *only* if a loop file has been built and the
 //                       device can decode it at that resolution.
 //
@@ -176,13 +176,18 @@ export async function loadSky({ renderer, onTexture, onStatus }) {
   const affordable = STILL_TIERS.filter(
     (tier) => tier.width <= caps.maxTextureSize && (tier.width <= 4096 || caps.memoryBudget >= 6)
   );
-  const plates = affordable.length ? affordable : [STILL_TIERS[0]];
+  // Best tier first, then progressively cheaper ones. Only ONE plate is ever
+  // fetched: downloading the 4K panorama and then immediately replacing it
+  // with the 8K one doubled the bytes and the decode cost of every page load.
+  // A lower tier is requested only when the tier above it actually failed.
+  const plates = (affordable.length ? affordable : [STILL_TIERS[0]]).slice().reverse();
 
   for (const tier of plates) {
     try {
       const texture = await loadStill(tier.url, renderer);
       onTexture(texture, tier);
       report(tier.label, tier.url, tier.width, false);
+      break;
     } catch (error) {
       console.warn(`[sky] ${tier.label} unavailable`, error);
     }
