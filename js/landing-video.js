@@ -31,8 +31,13 @@
   }
 
   function succeed() {
+    if (started) return
     started = true
-    layer.classList.add('is-playing')
+    // YouTube paints its title bar / branding overlay for the first moment of
+    // playback, so hold the still image until that overlay has faded out.
+    setTimeout(function () {
+      layer.classList.add('is-playing')
+    }, 1600)
   }
 
   function createPlayer() {
@@ -59,8 +64,10 @@
       events: {
         onReady: function (event) {
           event.target.mute()
-          // Make sure no subtitle track renders over the background.
+          // Make sure no YouTube subtitle track renders over the background.
+          // (Text burned into the video frames themselves cannot be removed.)
           try {
+            event.target.setOption('captions', 'track', {})
             event.target.unloadModule('captions')
             event.target.unloadModule('cc')
           } catch (err) {}
@@ -69,6 +76,10 @@
         },
         onStateChange: function (event) {
           if (event.data === window.YT.PlayerState.PLAYING) {
+            try {
+              event.target.unloadModule('captions')
+              event.target.unloadModule('cc')
+            } catch (err) {}
             succeed()
             watchSegment()
           }
