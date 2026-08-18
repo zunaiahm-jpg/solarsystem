@@ -38,13 +38,37 @@
   }
 
   .landing-art,
+  .landing-video,
   .landing-shade {
     position: absolute;
     inset: 0;
   }
 
-  .landing-art {
+  /* YouTube background: sits above the still image, below the shade */
+  .landing-video {
     z-index: -2;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 900ms ease;
+  }
+
+  .landing-video.is-playing { opacity: 1; }
+  .landing-video.is-unavailable { display: none; }
+
+  .landing-video iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* cover the viewport while keeping 16:9 */
+    width: max(100vw, 177.7778svh);
+    height: max(100svh, 56.25vw);
+    transform: translate(-50%, -50%);
+    border: 0;
+  }
+
+  .landing-art {
+    z-index: -3;
     background: var(--space) url('../assets/landing/space-explorer.png') center / cover no-repeat;
     transform: scale(1.02);
     animation: reveal 1.8s ease-out both;
@@ -160,6 +184,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .landing-art { animation: none; }
+    .landing-video { display: none; }
     .explore-button { transition: none; }
   }
 
