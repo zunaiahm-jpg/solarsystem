@@ -13,10 +13,18 @@
 </head>
 <body>
   <main class="landing-shell">
-    <div class="landing-video" data-video-id="aOuVTGG9Bik" aria-hidden="true">
-      <div class="landing-video-frame"></div>
-      <div class="landing-video-shield"></div>
-    </div>
+    <video
+      class="landing-video"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      aria-hidden="true"
+      tabindex="-1"
+    >
+      <source src="assets/landing/hero-bg.mp4" type="video/mp4" />
+    </video>
     <div class="landing-shade" aria-hidden="true"></div>
 
     <header class="landing-header">
@@ -223,7 +231,5 @@
     <h2>Contact</h2>
     <p><a class="about-link" href="mailto:solaristrekk@gmail.com">solaristrekk@gmail.com</a></p>
   </aside>
-
-  <script src="js/landing-video.js" defer></script>
 </body>
 </html>
