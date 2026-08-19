@@ -146,10 +146,6 @@
     </div>
     <div class="tech-grid">
       <div class="tech-item">
-        <h3>Three.js &amp; WebGL</h3>
-        <p>Hardware-accelerated 3D rendering with realistic lighting, atmospheres, and shadows drawn straight to a canvas in your browser.</p>
-      </div>
-      <div class="tech-item">
         <h3>Adaptive Texture Streaming</h3>
         <p>8K NASA surface maps are loaded and scaled to your device, keeping detail high on desktop while staying smooth on mobile.</p>
       </div>
@@ -166,7 +162,6 @@
     <div class="spec-panel">
       <p class="spec-head">Technical specifications</p>
       <dl class="spec-list">
-        <div><dt>Render engine</dt><dd>Three.js / WebGL</dd></div>
         <div><dt>Surface detail</dt><dd>Up to 8K NASA textures</dd></div>
         <div><dt>Sky backdrop</dt><dd>6K–8K Milky Way maps</dd></div>
         <div><dt>Immersion</dt><dd>WebXR VR ready</dd></div>
@@ -234,9 +229,76 @@
     </div>
   </section>
 
+  <!-- ═══════════════════════════════════════════
+       REGISTER
+  ═══════════════════════════════════════════ -->
+  <section id="register" class="section section-alt" aria-labelledby="register-title">
+    <div class="section-head">
+      <p class="section-eyebrow">Register</p>
+      <h2 id="register-title">Join the Solaris community</h2>
+      <p class="section-lead">Sign up to receive updates about new planets, features, and classroom resources. Registration is free.</p>
+    </div>
+    <form id="register-form" class="landing-form" novalidate>
+      <div class="form-field">
+        <label for="reg-name">Name</label>
+        <input id="reg-name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="120" />
+      </div>
+      <div class="form-field">
+        <label for="reg-school">School <span class="form-optional">(optional)</span></label>
+        <input id="reg-school" name="school" type="text" autocomplete="organization" maxlength="160" />
+      </div>
+      <div class="form-field">
+        <label for="reg-email">Email address</label>
+        <input id="reg-email" name="email" type="email" autocomplete="email" required maxlength="254" />
+      </div>
+      <div class="form-hp" aria-hidden="true">
+        <label for="reg-website">Leave this field empty</label>
+        <input id="reg-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+      <button class="form-submit" type="submit">Register</button>
+      <p class="form-status" id="register-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       FEEDBACK
+  ═══════════════════════════════════════════ -->
+  <section id="feedback" class="section" aria-labelledby="feedback-title">
+    <div class="section-head">
+      <p class="section-eyebrow">Feedback</p>
+      <h2 id="feedback-title">Tell us what you think</h2>
+      <p class="section-lead">Solaris is always evolving. Share your thoughts, ideas, and what you would love to see next.</p>
+    </div>
+    <form id="feedback-form" class="landing-form" novalidate>
+      <div class="form-field">
+        <label for="fb-name">Name</label>
+        <input id="fb-name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="120" />
+      </div>
+      <div class="form-field">
+        <label for="fb-email">Email address</label>
+        <input id="fb-email" name="email" type="email" autocomplete="email" required maxlength="254" />
+      </div>
+      <div class="form-field">
+        <label for="fb-country">Country</label>
+        <input id="fb-country" name="country" type="text" autocomplete="country-name" required minlength="2" maxlength="100" />
+      </div>
+      <div class="form-field">
+        <label for="fb-thoughts">Your feedback</label>
+        <textarea id="fb-thoughts" name="thoughts" rows="4" required minlength="3" maxlength="2000"></textarea>
+      </div>
+      <div class="form-hp" aria-hidden="true">
+        <label for="fb-website">Leave this field empty</label>
+        <input id="fb-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+      <button class="form-submit" type="submit">Send feedback</button>
+      <p class="form-status" id="feedback-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
   <footer class="landing-footer">
     <span class="brand">SOLARIS</span>
-    <a class="footer-contact" href="mailto:solaristrekk@gmail.com">solaristrekk@gmail.com</a>
+    <a class="footer-contact" href="mailto:contact@solarisvr.com">contact@solarisvr.com</a>
+    <span class="footer-copy">&copy; <span id="footer-year">2026</span> Solaris. All rights reserved.</span>
   </footer>
 
   <aside id="about-panel" class="about-panel" popover aria-labelledby="about-title">
@@ -252,7 +314,7 @@
       <li>Focused, immersive exploration with WebXR VR support</li>
     </ul>
     <h2>Contact</h2>
-    <p><a class="about-link" href="mailto:solaristrekk@gmail.com">solaristrekk@gmail.com</a></p>
+    <p><a class="about-link" href="mailto:contact@solarisvr.com">contact@solarisvr.com</a></p>
   </aside>
 
   <audio id="ambient-audio" src="assets/audio/landing-theme.mp3" loop preload="auto"></audio>
@@ -291,6 +353,66 @@
       audio.addEventListener('play', function () { render(true); });
 
       render(false);
+    })();
+  </script>
+
+  <script>
+    (function () {
+      // Auto-updating copyright year
+      var yearEl = document.getElementById('footer-year');
+      if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
+      // Shared form handler: honeypot + timing anti-spam, posts JSON
+      function wireForm(formId, statusId, endpoint, successMessage) {
+        var form = document.getElementById(formId);
+        var status = document.getElementById(statusId);
+        if (!form || !status) return;
+
+        var loadedAt = Date.now();
+
+        form.addEventListener('submit', function (event) {
+          event.preventDefault();
+          if (!form.reportValidity()) return;
+
+          var button = form.querySelector('.form-submit');
+          var data = Object.fromEntries(new FormData(form).entries());
+          data.startedAt = loadedAt;
+
+          status.textContent = 'Sending…';
+          status.className = 'form-status is-pending';
+          if (button) button.disabled = true;
+
+          fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          })
+            .then(function (res) {
+              return res.json().then(function (body) { return { ok: res.ok, body: body }; });
+            })
+            .then(function (result) {
+              if (result.ok) {
+                status.textContent = successMessage;
+                status.className = 'form-status is-success';
+                form.reset();
+                loadedAt = Date.now();
+              } else {
+                status.textContent = (result.body && result.body.error) || 'Something went wrong. Please try again.';
+                status.className = 'form-status is-error';
+              }
+            })
+            .catch(function () {
+              status.textContent = 'Network error. Please try again.';
+              status.className = 'form-status is-error';
+            })
+            .finally(function () {
+              if (button) button.disabled = false;
+            });
+        });
+      }
+
+      wireForm('register-form', 'register-status', '/api/register', 'Thanks for registering — welcome to Solaris!');
+      wireForm('feedback-form', 'feedback-status', '/api/responses', 'Thank you for your feedback!');
     })();
   </script>
 </body>
