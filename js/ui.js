@@ -160,16 +160,57 @@ function startLoadingSequence(onLoaded) {
   const screen = document.getElementById('loading-screen');
   const startBtn = document.getElementById('start-btn');
   const startLabel = document.getElementById('start-label');
+  const epoch = document.getElementById('cosmic-epoch');
   const startedAt = performance.now();
   let textureProgress = 0;
   let ready = false;
   let entered = false;
   let wantsEnter = false;
 
-  const setProgress = (value, message) => {
+  // Rapid cosmic-timeline ticker under the Start pill. It flips through the
+  // history of the universe while textures stream in, then locks on
+  // "Solar System" once the scene is ready. It only runs during load so it
+  // never adds any delay to entering the experience.
+  const COSMIC_EPOCHS = [
+    'Big Bang', 'Planck Epoch', 'Inflation', 'Quark Epoch', 'Hadron Epoch',
+    'Lepton Epoch', 'Nucleosynthesis', 'Photon Epoch', 'Recombination',
+    'First Stars', 'Reionization', 'First Galaxies', 'Galaxy Formation',
+    'Galaxy Groups', 'Galaxy Clusters', 'Superclusters', 'Cosmic Voids',
+    'Cosmic Web', 'Milky Way Galaxy', 'Solar System',
+  ];
+  let epochIndex = 0;
+  let epochTimer = null;
+
+  const stopEpochTicker = () => {
+    if (epochTimer) { clearInterval(epochTimer); epochTimer = null; }
+    if (epoch) {
+      epoch.classList.remove('is-hidden');
+      epoch.textContent = 'Solar System';
+    }
+  };
+
+  if (epoch) {
+    epochTimer = setInterval(() => {
+      // Cycle quickly and stop one short of the end so the finale ("Solar
+      // System") is reserved for the moment the scene finishes loading.
+      if (epochIndex >= COSMIC_EPOCHS.length - 2) {
+        epochIndex = 0;
+      } else {
+        epochIndex += 1;
+      }
+      epoch.classList.add('is-hidden');
+      setTimeout(() => {
+        epoch.textContent = COSMIC_EPOCHS[epochIndex];
+        epoch.classList.remove('is-hidden');
+      }, 110);
+    }, 200);
+  }
+
+  // The loader line keeps its gently fading "Experience in VR" invitation,
+  // so we only stream the numeric progress into the Start pill here.
+  const setProgress = (value) => {
     const pct = Math.min(100, Math.round(value * 100));
     if (bar) bar.style.width = `${pct}%`;
-    if (text && message) text.textContent = message;
     if (startLabel && !ready) startLabel.textContent = pct > 2 ? `Start ${pct}%` : 'Start';
   };
 
@@ -188,6 +229,7 @@ function startLoadingSequence(onLoaded) {
   const markReady = (message = 'Visual systems online — press Start') => {
     if (ready) return;
     ready = true;
+    stopEpochTicker();
     setProgress(1, message);
     if (startLabel) startLabel.textContent = 'Start';
     startBtn?.classList.add('ready');
@@ -199,7 +241,6 @@ function startLoadingSequence(onLoaded) {
     if (ready) enter();
     else {
       wantsEnter = true;
-      if (text) text.textContent = 'Finishing the sky — entering when ready…';
     }
   });
 
