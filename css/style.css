@@ -111,12 +111,14 @@ html, body {
    (jaksic shows only the live scene + title + Start pill up front;
    display:none also re-triggers the chromeIn animation on entry) */
 body:not(.app-started) #settings-panel,
+body:not(.app-started) #controls-rail,
 body:not(.app-started) .corner-icon,
 body:not(.app-started) #obj-stats,
 body:not(.app-started) #info-panel,
 body:not(.app-started) #obj-actions,
 body:not(.app-started) #bottom-readout,
-body:not(.app-started) #asset-credits {
+body:not(.app-started) #asset-credits,
+body:not(.app-started) #site-label {
   display: none;
 }
 
@@ -282,37 +284,62 @@ body:not(.app-started) #asset-credits {
 #sound-btn.is-on .icon-off { display: none; }
 #sound-btn.is-on { opacity: 1; }
 #sound-btn.is-on svg { stroke: #e8e8e8; }
+#site-label {
+  position: fixed;
+  right: 88px;
+  bottom: 59px;
+  z-index: 100;
+  color: var(--text-bright);
+  font: 500 10px var(--font-head);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  opacity: 0.5;
+}
+#site-label:hover,
+#site-label:focus-visible {
+  color: var(--text-bright);
+  opacity: 0.5;
+}
 
 /* ════════════════════════════════════════════════════════════
    SETTINGS — left-edge command palette and persistent rail
 ════════════════════════════════════════════════════════════ */
+/* Drawer handle — a single morphing toggle that opens/closes the panel.
+   Sits on the left edge when closed, and slides to the drawer's edge as a
+   close (×) affordance when open. Always visible after the app starts. */
 #controls-rail {
   position: fixed;
   top: 72px;
   left: 12px;
-  z-index: 101;
+  z-index: 102;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.20);
-  border-radius: 14px;
+  border-radius: 15px;
   background: rgba(17, 19, 24, 0.82);
   backdrop-filter: blur(18px) saturate(135%);
   -webkit-backdrop-filter: blur(18px) saturate(135%);
   color: #fff;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.48), inset 0 1px rgba(255, 255, 255, 0.08);
   cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(-10px);
-  transition: opacity 0.24s ease, transform 0.24s ease, border-color 0.2s ease;
+  opacity: 1;
+  transform: translateX(0);
+  transition: transform 0.46s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, background 0.2s ease, opacity 0.24s ease;
 }
-#controls-rail svg { width: 20px; height: 20px; }
-#controls-rail:hover { border-color: rgba(255, 255, 255, 0.48); }
+#controls-rail svg { grid-area: 1 / 1; width: 20px; height: 20px; transition: opacity 0.22s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+#controls-rail:hover { border-color: rgba(255, 255, 255, 0.48); background: rgba(30, 33, 40, 0.90); }
+#controls-rail:active { transform: scale(0.94); }
 #controls-rail:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
-body.controls-closed #controls-rail { opacity: 1; pointer-events: auto; transform: translateX(0); }
+
+/* Persistent sidebar-toggle glyph (same icon for open + close, like VS Code / Notion).
+   The inner divider thickens into a filled sidebar when the panel is open. */
+#controls-rail .rail-icon-panel path { transition: stroke-width 0.25s ease; }
+body:not(.controls-closed) #controls-rail .rail-icon-panel path { stroke-width: 5; }
+/* When open, the handle glides to the panel's right edge to act as a toggle tab */
+body:not(.controls-closed) #controls-rail { transform: translateX(240px); }
 
 #settings-panel {
   position: fixed;
@@ -330,10 +357,29 @@ body.controls-closed #controls-rail { opacity: 1; pointer-events: auto; transfor
   color: #ebebeb;
   font-size: 12px;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.58), inset 0 1px rgba(255, 255, 255, 0.08);
-  animation: chromeIn 0.7s ease both;
-  transition: opacity 0.24s ease, transform 0.24s ease;
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease;
 }
-#settings-panel.body-closed { visibility: hidden; opacity: 0; pointer-events: none; transform: translateX(-16px) scale(0.97); }
+/* Slide the whole drawer off the left edge when closed */
+body.controls-closed #settings-panel {
+  transform: translateX(calc(-100% - 24px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Dim scrim behind the drawer (used on touch / small screens) */
+#controls-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 98;
+  background: rgba(2, 3, 6, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.32s ease;
+}
 
 #settings-toggle {
   display: flex;
@@ -352,10 +398,21 @@ body.controls-closed #controls-rail { opacity: 1; pointer-events: auto; transfor
 }
 .settings-heading { display: flex; flex-direction: column; gap: 2px; font-size: 14px; font-weight: 650; letter-spacing: 0.02em; }
 .settings-kicker { color: #999; font-size: 8px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; }
-#settings-toggle .caret { display: inline-block; color: #999; font-size: 11px; transform: rotate(90deg); transition: transform 0.2s ease; }
+#settings-toggle .caret { display: inline-block; color: #999; font-size: 11px; transform: rotate(90deg); transition: transform 0.25s ease; }
 #settings-toggle:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
+#settings-panel.panel-collapsed #settings-toggle .caret { transform: rotate(0deg); }
 
-#settings-body { display: flex; flex-direction: column; gap: 5px; padding: 10px; }
+#settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
+  max-height: calc(100vh - 190px);
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1), padding 0.3s ease, opacity 0.25s ease;
+}
+/* Header caret collapses just the control list, keeping the drawer open */
+#settings-panel.panel-collapsed #settings-body { max-height: 0; padding-top: 0; padding-bottom: 0; opacity: 0; }
 
 .s-row {
   display: flex;
@@ -467,31 +524,6 @@ body.controls-closed #controls-rail { opacity: 1; pointer-events: auto; transfor
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.35; }
 }
-
-/* Open/close controls footer button */
-#controls-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: calc(100% - 20px);
-  min-height: 38px;
-  margin: 0 10px 10px;
-  padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  color: #bfc0c4;
-  font-family: var(--font-head);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease;
-}
-#controls-toggle:hover { background: rgba(255, 255, 255, 0.09); color: #fff; }
-#controls-toggle:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 /* Search (lives inside the settings panel) */
 .s-search { padding: 0; cursor: default; }
@@ -941,7 +973,7 @@ body.controls-closed #controls-rail { opacity: 1; pointer-events: auto; transfor
 
 /* ════════════════════════════════════════════════════════════
    BOTTOM-RIGHT READOUT (simulation clock)
-════════════════════════════════════════════════════════════ */
+═══════════════════���═════════��══════════════════════════════ */
 #bottom-readout {
   position: fixed;
   right: 10px;
@@ -1007,7 +1039,7 @@ body.surface-active #asset-credits { color: var(--text); }
 
 /* ════════════════════════════════════════════════════════════
    VR NOTICE
-════════════════════════════════════════��═══════════════════ */
+════════════════════════════════════════════════════════════ */
 #vr-notice {
   position: fixed;
   left: 50%;
@@ -1039,6 +1071,7 @@ body.xr-presenting #obj-actions,
 body.xr-presenting #tooltip,
 body.xr-presenting #bottom-readout,
 body.xr-presenting #asset-credits,
+body.xr-presenting #site-label,
 body.xr-presenting .corner-icon { display: none !important; }
 
 /* ═══════���════════════════════════════════════════════════════
@@ -1132,14 +1165,27 @@ body.xr-presenting .corner-icon { display: none !important; }
 @media (max-width: 700px) {
   :root { --panel-w: 100vw; }
 
+  /* Full-height edge drawer on phones */
   #settings-panel {
-    top: 62px;
-    left: 10px;
-    width: min(232px, calc(100vw - 20px));
-    max-height: calc(100vh - 72px);
-    font-size: 11px;
+    top: 0;
+    left: 0;
+    width: min(320px, 86vw);
+    max-height: 100vh;
+    height: 100dvh;
+    border-radius: 0 20px 20px 0;
+    font-size: 12px;
+    padding-top: env(safe-area-inset-top, 0px);
   }
-  #controls-rail { top: 70px; left: 10px; }
+  #settings-body { max-height: calc(100dvh - 120px); }
+  body.controls-closed #settings-panel { transform: translateX(-100%); }
+
+  /* Handle stays bottom-friendly: closed at top-left, open pins to top-right */
+  #controls-rail { top: 70px; left: 10px; transform: translateX(0); }
+  body:not(.controls-closed) #controls-rail { top: 14px; left: auto; right: 14px; transform: translateX(0); }
+
+  /* Scrim becomes tappable to dismiss the drawer on touch screens */
+  body:not(.controls-closed) #controls-backdrop { opacity: 1; pointer-events: auto; }
+
   #camera-select { width: 122px; }
 
   #info-panel {
