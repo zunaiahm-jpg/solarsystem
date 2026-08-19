@@ -111,7 +111,6 @@ function setupCornerControls() {
 function setupSettingsPanel() {
   const panel = document.getElementById('settings-panel');
   const bodyToggle = document.getElementById('settings-toggle');
-  const controlsToggle = document.getElementById('controls-toggle');
   const controlsRail = document.getElementById('controls-rail');
   const backdrop = document.getElementById('controls-backdrop');
 
@@ -123,14 +122,12 @@ function setupSettingsPanel() {
     controlsRail?.setAttribute('aria-expanded', String(open));
     controlsRail?.setAttribute('aria-label', open ? 'Close controls' : 'Open controls');
     controlsRail?.setAttribute('title', open ? 'Close controls' : 'Open controls');
-    controlsToggle?.setAttribute('aria-expanded', String(open));
   };
 
-  // Handle morphs between open (☰) and close (×) and toggles the drawer.
+  // The sidebar-toggle handle hides/unhides the drawer with the same button.
   controlsRail?.addEventListener('click', () =>
     setDrawer(document.body.classList.contains('controls-closed'))
   );
-  controlsToggle?.addEventListener('click', () => setDrawer(false));
   backdrop?.addEventListener('click', () => setDrawer(false));
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !document.body.classList.contains('controls-closed') && isMobile()) {

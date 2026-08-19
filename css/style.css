@@ -413,7 +413,6 @@ body.controls-closed #settings-panel {
 }
 /* Header caret collapses just the control list, keeping the drawer open */
 #settings-panel.panel-collapsed #settings-body { max-height: 0; padding-top: 0; padding-bottom: 0; opacity: 0; }
-#settings-panel.panel-collapsed #controls-toggle { opacity: 0; pointer-events: none; height: 0; min-height: 0; margin: 0; padding: 0; border: 0; overflow: hidden; }
 
 .s-row {
   display: flex;
@@ -525,31 +524,6 @@ body.controls-closed #settings-panel {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.35; }
 }
-
-/* Open/close controls footer button */
-#controls-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: calc(100% - 20px);
-  min-height: 38px;
-  margin: 0 10px 10px;
-  padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  color: #bfc0c4;
-  font-family: var(--font-head);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease;
-}
-#controls-toggle:hover { background: rgba(255, 255, 255, 0.09); color: #fff; }
-#controls-toggle:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 /* Search (lives inside the settings panel) */
 .s-search { padding: 0; cursor: default; }
@@ -999,7 +973,7 @@ body.controls-closed #settings-panel {
 
 /* ════════════════════════════════════════════════════════════
    BOTTOM-RIGHT READOUT (simulation clock)
-═══════════════════���════════════════════════════════════════ */
+═══════════════════���═════════��══════════════════════════════ */
 #bottom-readout {
   position: fixed;
   right: 10px;
