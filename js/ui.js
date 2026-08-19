@@ -166,10 +166,11 @@ function startLoadingSequence(onLoaded) {
   let entered = false;
   let wantsEnter = false;
 
-  const setProgress = (value, message) => {
+  // The loader line keeps its gently fading "Experience in VR" invitation,
+  // so we only stream the numeric progress into the Start pill here.
+  const setProgress = (value) => {
     const pct = Math.min(100, Math.round(value * 100));
     if (bar) bar.style.width = `${pct}%`;
-    if (text && message) text.textContent = message;
     if (startLabel && !ready) startLabel.textContent = pct > 2 ? `Start ${pct}%` : 'Start';
   };
 
@@ -199,7 +200,6 @@ function startLoadingSequence(onLoaded) {
     if (ready) enter();
     else {
       wantsEnter = true;
-      if (text) text.textContent = 'Finishing the sky — entering when ready…';
     }
   });
 

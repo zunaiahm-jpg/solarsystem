@@ -196,10 +196,16 @@ body:not(.app-started) #asset-credits {
 }
 
 .loader-status {
-  font-size: 11px;
-  color: #888;
-  letter-spacing: 0.06em;
+  font-size: 12px;
+  color: #cbcbcb;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
   min-height: 16px;
+  animation: loaderTextFade 3.2s ease-in-out infinite;
+}
+@keyframes loaderTextFade {
+  0%, 100% { opacity: 0.15; }
+  50%      { opacity: 1; }
 }
 
 .splash-proof {
