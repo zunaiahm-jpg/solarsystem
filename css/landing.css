@@ -111,12 +111,35 @@
   }
 
   .hero-eyebrow {
+    position: relative;
+    display: inline-grid;
+    justify-items: center;
     margin: 0;
     color: var(--solar);
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.22em;
     text-transform: uppercase;
+  }
+
+  .hero-eyebrow-base,
+  .hero-eyebrow-vr {
+    grid-area: 1 / 1;
+    animation: eyebrow-cross 6s ease-in-out infinite;
+  }
+
+  .hero-eyebrow-vr { animation-delay: 3s; }
+
+  @keyframes eyebrow-cross {
+    0%, 6% { opacity: 0; transform: translateY(4px); }
+    14%, 44% { opacity: 1; transform: translateY(0); }
+    52%, 100% { opacity: 0; transform: translateY(-4px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-eyebrow-base,
+    .hero-eyebrow-vr { animation: none; transform: none; }
+    .hero-eyebrow-vr { display: none; }
   }
 
   .hero-title {
