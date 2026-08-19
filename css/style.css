@@ -116,7 +116,8 @@ body:not(.app-started) #obj-stats,
 body:not(.app-started) #info-panel,
 body:not(.app-started) #obj-actions,
 body:not(.app-started) #bottom-readout,
-body:not(.app-started) #asset-credits {
+body:not(.app-started) #asset-credits,
+body:not(.app-started) #site-label {
   display: none;
 }
 
@@ -282,6 +283,22 @@ body:not(.app-started) #asset-credits {
 #sound-btn.is-on .icon-off { display: none; }
 #sound-btn.is-on { opacity: 1; }
 #sound-btn.is-on svg { stroke: #e8e8e8; }
+#site-label {
+  position: fixed;
+  right: 88px;
+  bottom: 59px;
+  z-index: 100;
+  color: var(--text-bright);
+  font: 500 10px var(--font-head);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  opacity: 0.5;
+}
+#site-label:hover,
+#site-label:focus-visible {
+  color: var(--text-bright);
+  opacity: 0.5;
+}
 
 /* ════════════════════════════════════════════════════════════
    SETTINGS — left-edge command palette and persistent rail
@@ -1007,7 +1024,7 @@ body.surface-active #asset-credits { color: var(--text); }
 
 /* ════════════════════════════════════════════════════════════
    VR NOTICE
-════════════════════════════════════════��═══════════════════ */
+════════════════════════════════════════════════════════════ */
 #vr-notice {
   position: fixed;
   left: 50%;
@@ -1039,6 +1056,7 @@ body.xr-presenting #obj-actions,
 body.xr-presenting #tooltip,
 body.xr-presenting #bottom-readout,
 body.xr-presenting #asset-credits,
+body.xr-presenting #site-label,
 body.xr-presenting .corner-icon { display: none !important; }
 
 /* ═══════���════════════════════════════════════════════════════

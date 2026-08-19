@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Static WebGL solar system explorer (Three.js via CDN import map)",
   "scripts": {
-    "dev": "node server.js",
+    "dev": "node --env-file-if-exists=.env.development.local server.js",
     "start": "node server.js"
   },
   "dependencies": {
