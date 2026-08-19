@@ -166,10 +166,48 @@ function startLoadingSequence(onLoaded) {
   let entered = false;
   let wantsEnter = false;
 
-  const setProgress = (value, message) => {
+  // Cosmic timeline shown during load instead of technical status lines.
+  // The words fade from the Big Bang all the way down to our Solar System.
+  const COSMIC_EPOCHS = [
+    'Big Bang', 'Planck Epoch', 'Inflation', 'Quark Epoch', 'Hadron Epoch',
+    'Lepton Epoch', 'Nucleosynthesis', 'Photon Epoch', 'First Stars',
+    'Reionization', 'First Galaxies', 'Galaxy Formation', 'Galaxy Groups',
+    'Galaxy Clusters', 'Superclusters', 'Cosmic Voids', 'Cosmic Web',
+    'Observable Universe', 'Milky Way Galaxy', 'Solar System',
+  ];
+  let epochIndex = 0;
+
+  const showEpoch = label => {
+    if (!text) return;
+    text.classList.add('is-fading');
+    setTimeout(() => {
+      text.textContent = label;
+      text.classList.remove('is-fading');
+    }, 500);
+  };
+
+  if (text) text.textContent = COSMIC_EPOCHS[0];
+
+  const epochTimer = setInterval(() => {
+    if (epochIndex >= COSMIC_EPOCHS.length - 1) {
+      clearInterval(epochTimer);
+      return;
+    }
+    epochIndex += 1;
+    showEpoch(COSMIC_EPOCHS[epochIndex]);
+  }, 700);
+
+  const settleOnSolarSystem = () => {
+    clearInterval(epochTimer);
+    if (epochIndex !== COSMIC_EPOCHS.length - 1) {
+      epochIndex = COSMIC_EPOCHS.length - 1;
+      showEpoch(COSMIC_EPOCHS[epochIndex]);
+    }
+  };
+
+  const setProgress = (value) => {
     const pct = Math.min(100, Math.round(value * 100));
     if (bar) bar.style.width = `${pct}%`;
-    if (text && message) text.textContent = message;
     if (startLabel && !ready) startLabel.textContent = pct > 2 ? `Start ${pct}%` : 'Start';
   };
 
@@ -188,6 +226,7 @@ function startLoadingSequence(onLoaded) {
   const markReady = (message = 'Visual systems online — press Start') => {
     if (ready) return;
     ready = true;
+    settleOnSolarSystem();
     setProgress(1, message);
     if (startLabel) startLabel.textContent = 'Start';
     startBtn?.classList.add('ready');
@@ -199,7 +238,6 @@ function startLoadingSequence(onLoaded) {
     if (ready) enter();
     else {
       wantsEnter = true;
-      if (text) text.textContent = 'Finishing the sky — entering when ready…';
     }
   });
 
