@@ -113,17 +113,39 @@ function setupSettingsPanel() {
   const bodyToggle = document.getElementById('settings-toggle');
   const controlsToggle = document.getElementById('controls-toggle');
   const controlsRail = document.getElementById('controls-rail');
+  const backdrop = document.getElementById('controls-backdrop');
 
-  const setClosed = (closed) => {
-    panel?.classList.toggle('body-closed', closed);
-    document.body.classList.toggle('controls-closed', closed);
-    bodyToggle?.setAttribute('aria-expanded', String(!closed));
-    controlsToggle?.setAttribute('aria-expanded', String(!closed));
-    controlsRail?.setAttribute('aria-expanded', String(!closed));
+  const isMobile = () => window.matchMedia('(max-width: 700px)').matches;
+
+  // Slide the whole drawer in/out. `open === true` reveals the panel.
+  const setDrawer = (open) => {
+    document.body.classList.toggle('controls-closed', !open);
+    controlsRail?.setAttribute('aria-expanded', String(open));
+    controlsRail?.setAttribute('aria-label', open ? 'Close controls' : 'Open controls');
+    controlsRail?.setAttribute('title', open ? 'Close controls' : 'Open controls');
+    controlsToggle?.setAttribute('aria-expanded', String(open));
   };
-  bodyToggle?.addEventListener('click', () => setClosed(!panel?.classList.contains('body-closed')));
-  controlsToggle?.addEventListener('click', () => setClosed(true));
-  controlsRail?.addEventListener('click', () => setClosed(false));
+
+  // Handle morphs between open (☰) and close (×) and toggles the drawer.
+  controlsRail?.addEventListener('click', () =>
+    setDrawer(document.body.classList.contains('controls-closed'))
+  );
+  controlsToggle?.addEventListener('click', () => setDrawer(false));
+  backdrop?.addEventListener('click', () => setDrawer(false));
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !document.body.classList.contains('controls-closed') && isMobile()) {
+      setDrawer(false);
+    }
+  });
+
+  // Header caret collapses just the control list while the drawer stays open.
+  bodyToggle?.addEventListener('click', () => {
+    const collapsed = panel?.classList.toggle('panel-collapsed');
+    bodyToggle.setAttribute('aria-expanded', String(!collapsed));
+  });
+
+  // Start closed on phones (more screen for the scene), open on desktop.
+  setDrawer(!isMobile());
 
   // Info checkbox toggles the bottom-left stats table
   const infoToggle = document.getElementById('toggle-info');

@@ -75,15 +75,20 @@
   <!-- ═══════════════════════════════════════════
        SETTINGS PANEL (left-side command palette)
   ═══════════════════════════════════════════ -->
-  <button id="controls-rail" type="button" aria-controls="settings-panel" aria-expanded="true" aria-label="Open controls" title="Open controls">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <button id="controls-rail" type="button" aria-controls="settings-panel" aria-expanded="false" aria-label="Open controls" title="Open controls">
+    <svg class="rail-icon-open" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M4 7h10M18 7h2M4 17h2M10 17h10M4 12h4M12 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       <circle cx="16" cy="7" r="2" stroke="currentColor" stroke-width="1.8"/>
       <circle cx="8" cy="17" r="2" stroke="currentColor" stroke-width="1.8"/>
       <circle cx="10" cy="12" r="2" stroke="currentColor" stroke-width="1.8"/>
     </svg>
-    <span class="sr-only">Open controls</span>
+    <svg class="rail-icon-close" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+    </svg>
+    <span class="sr-only">Toggle controls</span>
   </button>
+
+  <div id="controls-backdrop" aria-hidden="true"></div>
 
   <div id="settings-panel">
     <button id="settings-toggle" type="button" aria-controls="settings-body" aria-expanded="true">
@@ -322,7 +327,7 @@
     <span id="current-date"></span>
   </div>
 
-  <!-- ═══════════════════════════════���═══════════
+  <!-- ═══════════════════════════════���═════���═════
        TOOLTIP
   ══════════���════════════════════════════════ -->
   <div id="tooltip" role="tooltip"></div>
