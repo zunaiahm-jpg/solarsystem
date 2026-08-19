@@ -75,15 +75,15 @@
   <!-- ═══════════════════════════════════════════
        SETTINGS PANEL (left-side command palette)
   ═══════════════════════════════════════════ -->
-  <button id="controls-rail" type="button" aria-controls="settings-panel" aria-expanded="true" aria-label="Open controls" title="Open controls">
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 7h10M18 7h2M4 17h2M10 17h10M4 12h4M12 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-      <circle cx="16" cy="7" r="2" stroke="currentColor" stroke-width="1.8"/>
-      <circle cx="8" cy="17" r="2" stroke="currentColor" stroke-width="1.8"/>
-      <circle cx="10" cy="12" r="2" stroke="currentColor" stroke-width="1.8"/>
+  <button id="controls-rail" type="button" aria-controls="settings-panel" aria-expanded="false" aria-label="Open controls" title="Open controls">
+    <svg class="rail-icon-panel" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3.25" y="4.75" width="17.5" height="14.5" rx="3" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M9.25 5.25v13.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
     </svg>
-    <span class="sr-only">Open controls</span>
+    <span class="sr-only">Toggle controls</span>
   </button>
+
+  <div id="controls-backdrop" aria-hidden="true"></div>
 
   <div id="settings-panel">
     <button id="settings-toggle" type="button" aria-controls="settings-body" aria-expanded="true">
@@ -137,7 +137,6 @@
       <button class="s-btn" id="btn-vr" type="button" aria-label="Enter VR" title="Enter VR — step inside the solar system">Enter VR</button>
 
     </div>
-    <button id="controls-toggle" type="button" aria-controls="settings-panel" aria-expanded="true"><span aria-hidden="true">←</span> Close controls</button>
   </div>
 
   <!-- ═══════════════════════════════════════════
@@ -314,17 +313,17 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════
+  <!-- ═══════��═══════════════════════════════════
        BOTTOM-RIGHT READOUT (sim clock)
-  ══════════════════════════���════════════════ -->
+  ══════════════════════════�����════════════════ -->
   <div id="bottom-readout">
     <span id="sim-date"></span>
     <span id="current-date"></span>
   </div>
 
-  <!-- ═══════════════════════════════���═══════════
+  <!-- ═══════════════════════════════���═════���═════
        TOOLTIP
-  ══════════���════════════════════════════════ -->
+  ══════════����════════════════════════════════ -->
   <div id="tooltip" role="tooltip"></div>
 
   <!-- ══════════════════════���════════════════════
