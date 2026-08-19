@@ -4,11 +4,8 @@
   "version": "1.0.0",
   "description": "Static WebGL solar system explorer (Three.js via CDN import map)",
   "scripts": {
-    "dev": "serve . -l 3000 --no-clipboard",
-    "start": "serve . -l 3000 --no-clipboard"
-  },
-  "devDependencies": {
-    "serve": "^14.2.4"
+    "dev": "node server.js",
+    "start": "node server.js"
   },
   "dependencies": {
     "3d-tiles-renderer": "^0.5.1",
