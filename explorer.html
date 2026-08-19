@@ -49,6 +49,19 @@
     </svg>
   </div>
 
+  <div id="sound-btn" class="corner-icon" title="Toggle ambient sound" role="button" tabindex="0" aria-label="Turn ambient sound on" aria-pressed="false">
+    <svg class="icon-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="#999" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M22 10 12 18H5v12h7l10 8z"/>
+      <path d="m31 19 10 10"/>
+      <path d="m41 19-10 10"/>
+    </svg>
+    <svg class="icon-on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="#999" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M22 10 12 18H5v12h7l10 8z"/>
+      <path d="M31 18a9 9 0 0 1 0 12"/>
+      <path d="M37 12a17 17 0 0 1 0 24"/>
+    </svg>
+  </div>
+
   <div id="help-btn" class="corner-icon" title="About this project" role="button" tabindex="0" aria-label="About this project">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" aria-hidden="true">
       <circle cx="24" cy="24" r="20" stroke="#999" stroke-width="3"/>
@@ -325,6 +338,55 @@
   }
   </script>
   <script type="module" src="js/app.js"></script>
+
+  <!-- ═══════════════════════════════════════════
+       AMBIENT SOUND
+  ═══════════════════════════════════════════ -->
+  <audio id="ambient-audio" src="assets/audio/solaris-theme.mp3" loop preload="auto"></audio>
+
+  <script>
+    (function () {
+      var audio = document.getElementById('ambient-audio');
+      var button = document.getElementById('sound-btn');
+      if (!audio || !button) return;
+
+      audio.volume = 0.5;
+
+      function render(on) {
+        button.classList.toggle('is-on', on);
+        button.setAttribute('aria-pressed', String(on));
+        button.setAttribute('aria-label', on ? 'Turn ambient sound off' : 'Turn ambient sound on');
+        button.setAttribute('title', on ? 'Ambient sound on' : 'Ambient sound off');
+      }
+
+      function toggle() {
+        if (audio.paused) {
+          var attempt = audio.play();
+          if (attempt && typeof attempt.then === 'function') {
+            attempt.then(function () { render(true); }).catch(function () { render(false); });
+          } else {
+            render(true);
+          }
+        } else {
+          audio.pause();
+          render(false);
+        }
+      }
+
+      button.addEventListener('click', toggle);
+      button.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          toggle();
+        }
+      });
+
+      audio.addEventListener('play', function () { render(true); });
+      audio.addEventListener('pause', function () { render(false); });
+
+      render(false);
+    })();
+  </script>
 
 </body>
 </html>

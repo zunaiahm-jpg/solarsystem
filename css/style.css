@@ -235,6 +235,20 @@ body:not(.app-started) #asset-credits {
   right: 0;
   bottom: 42px;
 }
+/* Small ambient-sound toggle, sitting just left of the help icon */
+#sound-btn {
+  right: 46px;
+  bottom: 42px;
+  width: 1.05em;
+  height: 1.05em;
+  margin-top: 1.13em;
+}
+#sound-btn .icon-on { display: none; }
+#sound-btn .icon-off { display: block; }
+#sound-btn.is-on .icon-on { display: block; }
+#sound-btn.is-on .icon-off { display: none; }
+#sound-btn.is-on { opacity: 1; }
+#sound-btn.is-on svg { stroke: #e8e8e8; }
 
 /* ════════════════════════════════════════════════════════════
    SETTINGS — left-edge command palette and persistent rail
