@@ -234,6 +234,18 @@ body:not(.app-started) #asset-credits {
   text-transform: uppercase;
   color: #777;
 }
+.splash-proof-link {
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+.splash-proof-link:hover,
+.splash-proof-link:focus-visible {
+  color: #cfe6ff;
+}
 
 /* ════════════════════════════════════════════════════════════
    CORNER ICONS (fullscreen top-left, help bottom-right)
@@ -995,7 +1007,7 @@ body.surface-active #asset-credits { color: var(--text); }
 
 /* ════════════════════════════════════════════════════════════
    VR NOTICE
-════════════════════════════════════════════════════════════ */
+════════════════════════════════════════��═══════════════════ */
 #vr-notice {
   position: fixed;
   left: 50%;
