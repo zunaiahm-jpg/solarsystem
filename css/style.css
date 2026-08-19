@@ -334,11 +334,11 @@ body:not(.app-started) #site-label {
 #controls-rail:active { transform: scale(0.94); }
 #controls-rail:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
-/* Icon morph: hamburger (open action) ↔ × (close action) */
-#controls-rail .rail-icon-close { opacity: 0; transform: rotate(-90deg) scale(0.6); }
-body:not(.controls-closed) #controls-rail .rail-icon-open  { opacity: 0; transform: rotate(90deg) scale(0.6); }
-body:not(.controls-closed) #controls-rail .rail-icon-close { opacity: 1; transform: rotate(0) scale(1); }
-/* When open, the handle glides to the panel's right edge to act as a close tab */
+/* Persistent sidebar-toggle glyph (same icon for open + close, like VS Code / Notion).
+   The inner divider thickens into a filled sidebar when the panel is open. */
+#controls-rail .rail-icon-panel path { transition: stroke-width 0.25s ease; }
+body:not(.controls-closed) #controls-rail .rail-icon-panel path { stroke-width: 5; }
+/* When open, the handle glides to the panel's right edge to act as a toggle tab */
 body:not(.controls-closed) #controls-rail { transform: translateX(240px); }
 
 #settings-panel {
@@ -999,7 +999,7 @@ body.controls-closed #settings-panel {
 
 /* ════════════════════════════════════════════════════════════
    BOTTOM-RIGHT READOUT (simulation clock)
-════════════════════════════════════════════════════════════ */
+═══════════════════���════════════════════════════════════════ */
 #bottom-readout {
   position: fixed;
   right: 10px;
