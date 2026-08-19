@@ -237,8 +237,33 @@
       <p class="section-eyebrow">Register</p>
       <h2 id="register-title">Join the Solaris community</h2>
       <p class="section-lead">Sign up to receive updates about new planets, features, and classroom resources. Registration is free.</p>
+      <button class="section-action" type="button" popovertarget="register-panel">Register now</button>
     </div>
-    <form id="register-form" class="landing-form" novalidate>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       FEEDBACK
+  ═══════════════════════════════════════════ -->
+  <section id="feedback" class="section" aria-labelledby="feedback-title">
+    <div class="section-head">
+      <p class="section-eyebrow">Feedback</p>
+      <h2 id="feedback-title">Tell us what you think</h2>
+      <p class="section-lead">Solaris is always evolving. Share your thoughts, ideas, and what you would love to see next.</p>
+      <button class="section-action" type="button" popovertarget="feedback-panel">Give feedback</button>
+    </div>
+  </section>
+
+  <footer class="landing-footer">
+    <span class="brand">SOLARIS</span>
+    <a class="footer-contact" href="mailto:contact@solarisvr.com">contact@solarisvr.com</a>
+    <span class="footer-copy">&copy; <span id="footer-year">2026</span> Solaris. All rights reserved.</span>
+  </footer>
+
+  <div id="register-panel" class="modal-panel" popover aria-labelledby="register-panel-title">
+    <button class="about-close" type="button" popovertarget="register-panel" popovertargetaction="hide" aria-label="Close registration form">×</button>
+    <p class="about-eyebrow">Register</p>
+    <h2 id="register-panel-title" class="modal-title">Join the Solaris community</h2>
+    <form id="register-form" class="modal-form" novalidate>
       <div class="form-field">
         <label for="reg-name">Name</label>
         <input id="reg-name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="120" />
@@ -258,18 +283,13 @@
       <button class="form-submit" type="submit">Register</button>
       <p class="form-status" id="register-status" role="status" aria-live="polite"></p>
     </form>
-  </section>
+  </div>
 
-  <!-- ═══════════════════════════════════════════
-       FEEDBACK
-  ═══════════════════════════════════════════ -->
-  <section id="feedback" class="section" aria-labelledby="feedback-title">
-    <div class="section-head">
-      <p class="section-eyebrow">Feedback</p>
-      <h2 id="feedback-title">Tell us what you think</h2>
-      <p class="section-lead">Solaris is always evolving. Share your thoughts, ideas, and what you would love to see next.</p>
-    </div>
-    <form id="feedback-form" class="landing-form" novalidate>
+  <div id="feedback-panel" class="modal-panel" popover aria-labelledby="feedback-panel-title">
+    <button class="about-close" type="button" popovertarget="feedback-panel" popovertargetaction="hide" aria-label="Close feedback form">×</button>
+    <p class="about-eyebrow">Feedback</p>
+    <h2 id="feedback-panel-title" class="modal-title">Tell us what you think</h2>
+    <form id="feedback-form" class="modal-form" novalidate>
       <div class="form-field">
         <label for="fb-name">Name</label>
         <input id="fb-name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="120" />
@@ -293,13 +313,7 @@
       <button class="form-submit" type="submit">Send feedback</button>
       <p class="form-status" id="feedback-status" role="status" aria-live="polite"></p>
     </form>
-  </section>
-
-  <footer class="landing-footer">
-    <span class="brand">SOLARIS</span>
-    <a class="footer-contact" href="mailto:contact@solarisvr.com">contact@solarisvr.com</a>
-    <span class="footer-copy">&copy; <span id="footer-year">2026</span> Solaris. All rights reserved.</span>
-  </footer>
+  </div>
 
   <aside id="about-panel" class="about-panel" popover aria-labelledby="about-title">
     <button class="about-close" type="button" popovertarget="about-panel" popovertargetaction="hide" aria-label="Close about panel">×</button>
@@ -396,6 +410,14 @@
                 status.className = 'form-status is-success';
                 form.reset();
                 loadedAt = Date.now();
+                var panel = form.closest('[popover]');
+                if (panel) {
+                  setTimeout(function () {
+                    try { panel.hidePopover(); } catch (e) {}
+                    status.textContent = '';
+                    status.className = 'form-status';
+                  }, 1800);
+                }
               } else {
                 status.textContent = (result.body && result.body.error) || 'Something went wrong. Please try again.';
                 status.className = 'form-status is-error';
