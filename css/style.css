@@ -208,6 +208,21 @@ body:not(.app-started) #asset-credits {
   50%      { opacity: 1; }
 }
 
+/* Rapid cosmic-timeline ticker shown under the Start pill while loading. */
+.cosmic-epoch {
+  font-size: 11px;
+  color: #9fd0ff;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  min-height: 14px;
+  margin-top: 10px;
+  font-variant-numeric: tabular-nums;
+  transition: opacity 0.12s linear;
+}
+.cosmic-epoch.is-hidden {
+  opacity: 0;
+}
+
 .splash-proof {
   position: fixed;
   bottom: 26px;
