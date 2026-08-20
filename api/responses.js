@@ -20,7 +20,7 @@ async function sendFeedbackEmail({ name, email, country, thoughts }) {
   const apiKey = process.env.SENDPULSE_API_KEY;
   if (!apiKey) throw new Error('SENDPULSE_API_KEY is not configured');
 
-  const notificationAddress = 'feedbackteam@contact.solarisvr.com';
+  const notificationAddress = 'feedbackteam@solarisvr.com';
   const response = await fetch('https://api.sendpulse.com/smtp/emails', {
     method: 'POST',
     headers: {
