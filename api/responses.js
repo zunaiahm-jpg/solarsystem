@@ -46,6 +46,40 @@ async function sendFeedbackEmail({ name, email, country, thoughts }) {
   }
 }
 
+async function sendThankYouEmail({ name, email }) {
+  const apiKey = process.env.SENDPULSE_API_KEY;
+  if (!apiKey) throw new Error('SENDPULSE_API_KEY is not configured');
+
+  const senderAddress = 'feedbackteam@solarisvr.com';
+  const message =
+    'Thank you for exploring Solaris VR and taking the time to share your feedback. ' +
+    'Every piece of feedback helps us improve the experience and make the journey through space even better. ' +
+    'We truly appreciate your support and hope you\u2019ll continue exploring with us as Solaris VR evolves. \u2014 SolarisVR Team.';
+
+  const response = await fetch('https://api.sendpulse.com/smtp/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      email: {
+        subject: 'noreply-Thanks for the Feedback',
+        from: { name: 'Solaris VR', email: senderAddress },
+        to: [{ name: name || 'Explorer', email }],
+        html: `<p>Hi ${escapeHtml(name || 'there')},</p><p>${escapeHtml(message)}</p>`,
+        text: `Hi ${name || 'there'},\n\n${message}`
+      }
+    }),
+    signal: AbortSignal.timeout(10_000)
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    throw new Error(`SendPulse returned ${response.status}: ${details.slice(0, 300)}`);
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -75,6 +109,11 @@ module.exports = async function handler(req, res) {
     );
     await sendFeedbackEmail({ name, email, country, thoughts });
     await client.query('COMMIT');
+    try {
+      await sendThankYouEmail({ name, email });
+    } catch (thankYouError) {
+      console.error('[v0] Thank-you email failed:', thankYouError.message);
+    }
     recent.set(ip, now);
     res.status(201).json({ ok: true });
   } catch (error) {
