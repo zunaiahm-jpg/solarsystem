@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" class="admin-root">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Mission Responses · Odyssey</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Rajdhani:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=launch-1" />
+</head>
+<body class="admin-body">
+  <main class="admin-shell">
+    <header class="admin-header">
+      <div><p class="launch-kicker">Mission control</p><h1>Visitor transmissions</h1></div>
+      <a href="/">Return to experience</a>
+    </header>
+    <section id="admin-login" class="admin-login">
+      <h2>Restricted access</h2>
+      <p>Enter the mission-control password to continue.</p>
+      <form id="admin-login-form">
+        <label>Password<input name="password" type="password" autocomplete="current-password" required autofocus /></label>
+        <button class="launch-primary" type="submit">Unlock dashboard</button>
+        <p id="admin-login-status" role="status"></p>
+      </form>
+    </section>
+    <section id="admin-dashboard" hidden>
+      <div class="admin-tools">
+        <label><span class="sr-only">Search responses</span><input id="admin-search" type="search" placeholder="Search name, email, country or response…" /></label>
+        <a id="admin-export" class="launch-secondary" href="/api/admin-responses?format=csv">Export CSV</a>
+      </div>
+      <div class="admin-table-wrap">
+        <table><thead><tr><th>Visitor</th><th>Country</th><th>Thoughts</th><th>Received</th></tr></thead><tbody id="response-rows"></tbody></table>
+      </div>
+      <div class="admin-pagination"><button id="admin-prev" type="button">Previous</button><span id="admin-page">Page 1</span><button id="admin-next" type="button">Next</button></div>
+      <p id="admin-status" role="status"></p>
+    </section>
+  </main>
+  <script src="js/admin.js" defer></script>
+</body>
+</html>
