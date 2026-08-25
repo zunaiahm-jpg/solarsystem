@@ -85,6 +85,25 @@
     text-decoration: none;
   }
 
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .header-link {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .header-link:hover {
+    color: var(--solar);
+  }
+
   .about-trigger {
     display: flex;
     align-items: center;
