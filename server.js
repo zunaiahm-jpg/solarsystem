@@ -82,6 +82,21 @@ function serveStatic(req, res) {
   }
 
   fs.stat(filePath, (err, stats) => {
+    // Directory URLs (e.g. /spaceedu/, /spaceedu/planets) resolve to index.html
+    // so the prebuilt SpaceEdu static export works.
+    if (!err && stats.isDirectory()) {
+      const indexPath = path.join(filePath, 'index.html');
+      fs.stat(indexPath, (indexErr, indexStats) => {
+        if (indexErr || !indexStats.isFile()) {
+          res.statusCode = 404;
+          res.end('Not found');
+          return;
+        }
+        res.setHeader('Content-Type', MIME['.html']);
+        fs.createReadStream(indexPath).pipe(res);
+      });
+      return;
+    }
     if (err || !stats.isFile()) {
       res.statusCode = 404;
       res.end('Not found');

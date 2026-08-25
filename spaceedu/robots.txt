@@ -1,0 +1,7 @@
+User-Agent: *
+Allow: /
+Disallow: /preview
+Disallow: /draft
+Disallow: /api
+
+Sitemap: https://spaceedu.app/sitemap.xml

@@ -1,0 +1,1 @@
+self.__SSG_MANIFEST=new Set(["\u002Fcompare\u002F[slug]","\u002Fdwarf-planets\u002F[slug]","\u002Fglossary\u002F[term]","\u002Fmissions\u002F[slug]","\u002Fplanets\u002F[slug]","\u002Fteachers\u002Flesson-plans\u002F[slug]","\u002Fteachers\u002Fworksheets\u002F[planet]"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()
