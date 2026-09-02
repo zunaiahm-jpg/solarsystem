@@ -3,23 +3,12 @@ import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { PLANETS_DATA, SUN_DATA } from './data.js';
+import { LITE_MODE } from './lite.js';
 
 // Low-bandwidth mode swaps the ~70 MB 8K texture set for the ~5 MB set in
-// /textures. It is enabled by ?lite=1, a saved preference from the settings
-// panel, or automatically when the browser reports Data Saver / a 2G–3G link.
-export const LITE_MODE = (() => {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('lite')) return params.get('lite') !== '0';
-    const saved = window.localStorage.getItem('solaris-lite');
-    if (saved === '1') return true;
-    if (saved === '0') return false;
-    const connection = navigator.connection;
-    if (connection?.saveData) return true;
-    if (/(^|-)2g$|^3g$/.test(connection?.effectiveType || '')) return true;
-  } catch { /* privacy modes may block storage */ }
-  return false;
-})();
+// /textures. The decision lives in js/lite.js so the sky and renderer can
+// share it; it is re-exported here for existing callers.
+export { LITE_MODE };
 
 const TEXTURE_ROOT = LITE_MODE ? './textures/' : './assets/textures/';
 const LIVE_EARTH_CLOUDS = LITE_MODE
