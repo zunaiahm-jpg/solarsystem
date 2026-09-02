@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Solaris &amp; Data Sources — Solaris</title>
+  <meta name="description" content="How Solaris is built, what is real and what is compressed, and every data source behind the model: NASA textures, ESO sky plates, live ISS, asteroid and space-weather feeds." />
+  <meta name="theme-color" content="#05070a" />
+  <link rel="canonical" href="https://solarisvr.com/about.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="About Solaris &amp; Data Sources" />
+  <meta property="og:description" content="What is real, what is compressed, and where every byte of data comes from." />
+  <meta property="og:url" content="https://solarisvr.com/about.html" />
+  <meta property="og:image" content="https://solarisvr.com/assets/landing/solar-horizon.png" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Jura:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/pages.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://solarisvr.com/#org",
+        "name": "Solaris",
+        "url": "https://solarisvr.com/",
+        "logo": "https://solarisvr.com/icon.svg",
+        "email": "contact@solarisvr.com",
+        "description": "An interactive 8K model of the solar system with real orbital data, live NASA and NOAA feeds, narrated classroom tours and WebXR VR."
+      },
+      {
+        "@type": "AboutPage",
+        "@id": "https://solarisvr.com/about.html",
+        "url": "https://solarisvr.com/about.html",
+        "name": "About Solaris & Data Sources",
+        "description": "How Solaris is built, what is real and what is compressed, and every data source behind the model.",
+        "isPartOf": { "@id": "https://solarisvr.com/#website" },
+        "about": { "@id": "https://solarisvr.com/#org" },
+        "inLanguage": "en"
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Solaris home">SOLARIS</a>
+    <nav class="site-nav" aria-label="Site navigation">
+      <a href="/today.html">Today</a>
+      <a href="/lessons.html">Lessons</a>
+      <a href="/worlds/earth.html">Worlds</a>
+      <a href="/about.html" aria-current="page">About</a>
+      <a href="/press.html">Press</a>
+      <a href="/spaceedu/">SpaceEdu</a>
+      <a class="nav-cta" href="/explorer.html">Launch</a>
+    </nav>
+  </header>
+
+  <main class="page page-narrow">
+    <div class="page-head">
+      <p class="eyebrow">About</p>
+      <h1 class="page-title">A semi-realistic solar system, honest about its shortcuts</h1>
+      <p class="lead">Solaris is an interactive model of the solar system that is quite, but not entirely, realistic. This page explains what is real, what is compressed, and exactly where every byte of data comes from.</p>
+    </div>
+
+    <section class="section prose" aria-labelledby="why">
+      <h2 id="why">Why compress space at all?</h2>
+      <p>At true scale, if Earth were a marble, the Sun would be a beach ball 150 metres away and Neptune would be four and a half kilometres from here. A faithful model is mostly empty black, which is accurate but not much use in a classroom.</p>
+      <p>Solaris keeps the parts that matter for understanding &mdash; relative sizes within a family of objects, orbital periods, axial tilts, inclinations, the direction everything moves &mdash; and algorithmically shrinks distances and time so the whole system stays in view and visibly alive. Every object panel shows the real figures next to the model, and the <a href="/lessons.html">lesson plans</a> lean into that gap as a teaching moment.</p>
+
+      <h2>What is real</h2>
+      <ul>
+        <li><strong>Orbital periods, tilts and inclinations</strong> for the Sun, eight planets and the major moons, seeded to their J2000 heliocentric longitudes so planets start in roughly the right place for today&rsquo;s date.</li>
+        <li><strong>Surface imagery</strong> &mdash; every textured body wears an 8K map built from NASA mission data (see sources below).</li>
+        <li><strong>Earth&rsquo;s clouds</strong> are refreshed daily from real satellite imagery.</li>
+        <li><strong>The sky</strong> is a photographic all-sky plate, not procedural noise; named stars and constellations are placed from their catalogue positions.</li>
+        <li><strong>Live layers</strong> &mdash; the ISS position, near-Earth asteroid passes and solar activity come straight from public NASA and NOAA feeds while you watch.</li>
+        <li><strong>Every statistic</strong> in the object panels (diameter, mass, day length, year length, moon counts) is a published figure.</li>
+      </ul>
+
+      <h2>What is compressed or schematic</h2>
+      <ul>
+        <li><strong>Distances</strong> between planets are shrunk non-linearly so the outer system is reachable.</li>
+        <li><strong>Sizes</strong> are exaggerated relative to orbital distance so planets are visible from the overview.</li>
+        <li><strong>Time</strong> runs faster than real time; the slider goes from paused to 20&times;.</li>
+        <li><strong>The ISS</strong> orbits at about 420 km, which would sit inside Earth&rsquo;s pixel at this scale. Its marker is drawn at a readable altitude; the latitude, longitude, altitude and speed shown are the real numbers.</li>
+        <li><strong>Asteroid positions</strong> are placed schematically around Earth using the logarithm of their real miss distance. The distance, speed and size figures on each marker are real.</li>
+        <li><strong>The space-weather halo</strong> on the Sun is a visual cue driven by the current GOES X-ray flare class and Kp index. It is not a rendering of the corona.</li>
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="sources">
+      <h2 id="sources">Data sources</h2>
+      <p>Everything below is publicly available. Solaris proxies the live feeds through a single same-origin endpoint (<code>/api/live</code>) with short caching so classrooms never hit provider rate limits and no API keys reach the browser.</p>
+
+      <div class="table-wrap">
+        <table class="data">
+          <thead>
+            <tr><th scope="col">Layer</th><th scope="col">Source</th><th scope="col">Refresh</th><th scope="col">Licence / notes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Planet, Moon and Sun textures (8K)</td>
+              <td><a href="https://www.solarsystemscope.com/textures/" rel="noopener" target="_blank">Solar System Scope</a> texture set, derived from NASA mission imagery (MESSENGER, Magellan, Blue Marble, Viking/MGS, Cassini, Voyager)</td>
+              <td>Static</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td>Low-bandwidth textures</td>
+              <td>Same set, downsampled (&asymp;5 MB total)</td>
+              <td>Static</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td>All-sky star plate (4K / 8K)</td>
+              <td><a href="https://svs.gsfc.nasa.gov/4851" rel="noopener" target="_blank">NASA SVS Deep Star Maps 2020</a></td>
+              <td>Static</td>
+              <td>Public domain (NASA)</td>
+            </tr>
+            <tr>
+              <td>Milky Way panorama (6K)</td>
+              <td><a href="https://www.eso.org/public/images/eso0932a/" rel="noopener" target="_blank">ESO / S. Brunier</a></td>
+              <td>Static</td>
+              <td>CC BY 4.0</td>
+            </tr>
+            <tr>
+              <td>Earth cloud layer</td>
+              <td><a href="https://clouds.matteason.co.uk/" rel="noopener" target="_blank">Live Cloud Maps</a> by Matt Eason (EUMETSAT / NOAA / JMA composites)</td>
+              <td>Daily</td>
+              <td>Free for non-commercial use</td>
+            </tr>
+            <tr>
+              <td>ISS position</td>
+              <td><a href="https://wheretheiss.at/w/developer" rel="noopener" target="_blank">Where The ISS At</a> REST API</td>
+              <td>Every 5 s</td>
+              <td>Free public API; TLE-based propagation</td>
+            </tr>
+            <tr>
+              <td>Near-Earth asteroid passes</td>
+              <td><a href="https://api.nasa.gov/" rel="noopener" target="_blank">NASA NeoWs</a> (JPL Small-Body Database)</td>
+              <td>Hourly</td>
+              <td>Public domain (NASA). Three-day close-approach window.</td>
+            </tr>
+            <tr>
+              <td>Space weather</td>
+              <td><a href="https://www.swpc.noaa.gov/" rel="noopener" target="_blank">NOAA Space Weather Prediction Center</a> &mdash; planetary Kp, GOES X-ray flux, real-time solar wind</td>
+              <td>Every 10 min</td>
+              <td>Public domain (US Government)</td>
+            </tr>
+            <tr>
+              <td>Latest developments feed</td>
+              <td><a href="https://www.nasa.gov/news-release/feed/" rel="noopener" target="_blank">NASA news RSS</a></td>
+              <td>On open</td>
+              <td>Public domain (NASA)</td>
+            </tr>
+            <tr>
+              <td>Mission videos</td>
+              <td>NASA and ESA official YouTube channels (privacy-enhanced embeds)</td>
+              <td>Static</td>
+              <td>Embedded under each channel&rsquo;s terms</td>
+            </tr>
+            <tr>
+              <td>Physical constants and statistics</td>
+              <td><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/" rel="noopener" target="_blank">NASA NSSDC Planetary Fact Sheet</a>, <a href="https://ssd.jpl.nasa.gov/" rel="noopener" target="_blank">JPL Solar System Dynamics</a></td>
+              <td>Static</td>
+              <td>Public domain (NASA)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="source-note">Spotted an error or a stale figure? Email <a href="mailto:contact@solarisvr.com">contact@solarisvr.com</a> with the object and the source you would prefer.</p>
+    </section>
+
+    <section class="section" aria-labelledby="tech">
+      <h2 id="tech">Technology</h2>
+      <div class="grid grid-2">
+        <article class="card">
+          <h3>Rendering</h3>
+          <p>Three.js (WebGL 2) with a physically based sky shader, ACES tone mapping and a single bloom pass. No film grain: real space has none.</p>
+        </article>
+        <article class="card">
+          <h3>Immersive VR</h3>
+          <p>WebXR with a comfort camera rig, thumbstick flight, snap-turn and a wrist HUD. Works in Quest Browser and any WebXR-capable headset without installing anything.</p>
+        </article>
+        <article class="card">
+          <h3>Narrated tours</h3>
+          <p>Built on the browser&rsquo;s Web Speech API, so there are no downloads, accounts or per-seat licences. Captions are always shown for accessibility and for browsers without speech.</p>
+        </article>
+        <article class="card">
+          <h3>Low-bandwidth mode</h3>
+          <p>Swaps the ~70 MB texture set for ~5 MB, caps the sky at 4K and drops post-processing. Turns on automatically with Data Saver, or via the settings panel or <code>?lite=1</code>.</p>
+        </article>
+        <article class="card">
+          <h3>Privacy</h3>
+          <p>No analytics, no trackers, no cookies. Videos use YouTube&rsquo;s privacy-enhanced domain. The only data stored locally is your low-bandwidth preference.</p>
+        </article>
+        <article class="card">
+          <h3>Accessibility</h3>
+          <p>Every control is keyboard reachable with visible focus, live regions announce feed updates and tour captions, and the site respects reduced-motion preferences.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="credits">
+      <h2 id="credits">Credits and licence</h2>
+      <p>Solaris is designed and built by the Solaris team. Imagery credits belong to NASA, ESO and the contributors named above. The Solaris code, design and written content are &copy; Solaris; educators may print and copy the <a href="/lessons.html">lesson plans</a> freely for classroom use.</p>
+      <div class="btn-row">
+        <a class="btn" href="/explorer.html">Launch Solaris</a>
+        <a class="btn btn-ghost" href="/press.html">Press &amp; changelog</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span class="brand">SOLARIS</span>
+    <nav aria-label="Footer">
+      <a href="/today.html">Today in space</a>
+      <a href="/lessons.html">Lesson plans</a>
+      <a href="/about.html">Data sources</a>
+      <a href="/press.html">Press</a>
+      <a href="mailto:contact@solarisvr.com">contact@solarisvr.com</a>
+    </nav>
+    <span>&copy; <span data-year>2026</span> Solaris</span>
+  </footer>
+  <script>document.querySelectorAll('[data-year]').forEach(function (el) { el.textContent = String(new Date().getFullYear()); });</script>
+</body>
+</html>

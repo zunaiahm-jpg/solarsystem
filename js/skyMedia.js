@@ -20,6 +20,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import * as THREE from 'three';
+import { LITE_MODE } from './lite.js';
 
 // Still plates, lowest tier first. Each is a full equirectangular 2:1 panorama.
 const STILL_TIERS = [
@@ -68,11 +69,12 @@ function detectCapabilities(renderer) {
   skyStatus.deviceMemory = deviceMemory;
 
   return {
-    maxTextureSize,
+    // Low-bandwidth mode caps the plate at 4K regardless of GPU headroom.
+    maxTextureSize: LITE_MODE ? Math.min(maxTextureSize, 4096) : maxTextureSize,
     // An 8K RGBA mipmapped plate costs roughly 170 MB of VRAM. Machines that
     // report 4 GB or less of system memory are given the 4K plate instead.
     memoryBudget: deviceMemory === null ? 8 : deviceMemory,
-    saveData: connection.saveData === true,
+    saveData: connection.saveData === true || LITE_MODE,
     reducedMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
   };
 }

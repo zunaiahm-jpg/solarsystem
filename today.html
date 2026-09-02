@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Today in Space — live ISS, asteroid passes and solar activity — Solaris</title>
+  <meta name="description" content="Where the International Space Station is right now, which asteroids pass Earth in the next three days, and how active the Sun is today — live from NASA and NOAA, with one-click links into the Solaris explorer." />
+  <meta name="theme-color" content="#05070a" />
+  <link rel="canonical" href="https://solarisvr.com/today.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Today in Space — Solaris" />
+  <meta property="og:description" content="Live ISS position, this week's asteroid passes and current solar activity." />
+  <meta property="og:url" content="https://solarisvr.com/today.html" />
+  <meta property="og:image" content="https://solarisvr.com/assets/landing/solar-horizon.png" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Jura:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/pages.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://solarisvr.com/today.html",
+        "url": "https://solarisvr.com/today.html",
+        "name": "Today in Space",
+        "description": "Live ISS position, near-Earth asteroid passes and current solar activity.",
+        "isPartOf": { "@id": "https://solarisvr.com/#website" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "Dataset",
+        "name": "Solaris live space feed",
+        "description": "Aggregated live ISS position (Where The ISS At), near-Earth asteroid close approaches (NASA NeoWs) and space weather (NOAA SWPC), refreshed every few seconds to hourly.",
+        "url": "https://solarisvr.com/today.html",
+        "license": "https://www.usa.gov/government-works",
+        "creator": { "@id": "https://solarisvr.com/#org" },
+        "isBasedOn": [
+          "https://wheretheiss.at/",
+          "https://api.nasa.gov/",
+          "https://www.swpc.noaa.gov/"
+        ],
+        "distribution": {
+          "@type": "DataDownload",
+          "encodingFormat": "application/json",
+          "contentUrl": "https://solarisvr.com/api/live"
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Solaris home">SOLARIS</a>
+    <nav class="site-nav" aria-label="Site navigation">
+      <a href="/today.html" aria-current="page">Today</a>
+      <a href="/lessons.html">Lessons</a>
+      <a href="/worlds/earth.html">Worlds</a>
+      <a href="/about.html">About</a>
+      <a href="/press.html">Press</a>
+      <a href="/spaceedu/">SpaceEdu</a>
+      <a class="nav-cta" href="/explorer.html">Launch</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <div class="page-head">
+      <p class="eyebrow"><span class="badge badge-live">Live</span></p>
+      <h1 class="page-title">Today in space</h1>
+      <p class="lead">Where the space station is at this second, which asteroids pass Earth this week, and how restless the Sun is right now. Every number comes from a public NASA or NOAA feed; every tile links into the explorer so you can see it in 3D.</p>
+      <p class="source-note" id="updated" role="status" aria-live="polite">Connecting to live feeds…</p>
+    </div>
+
+    <!-- ISS -->
+    <section class="section" aria-labelledby="iss-title">
+      <div class="lesson-head">
+        <h2 id="iss-title">International Space Station</h2>
+        <a class="btn" href="/explorer.html?ride=iss">Ride along in 3D</a>
+      </div>
+      <div class="grid grid-4" id="iss-tiles">
+        <div class="stat-tile" data-state="loading"><span class="stat-label">Latitude</span><span class="stat-value" id="iss-lat">—</span><span class="stat-sub" id="iss-hemi">&nbsp;</span></div>
+        <div class="stat-tile" data-state="loading"><span class="stat-label">Longitude</span><span class="stat-value" id="iss-lon">—</span><span class="stat-sub" id="iss-side">&nbsp;</span></div>
+        <div class="stat-tile" data-state="loading"><span class="stat-label">Altitude</span><span class="stat-value" id="iss-alt">—</span><span class="stat-sub">above sea level</span></div>
+        <div class="stat-tile" data-state="loading"><span class="stat-label">Speed</span><span class="stat-value" id="iss-speed">—</span><span class="stat-sub">≈ one orbit every 92 minutes</span></div>
+      </div>
+      <p class="source-note">Position updates every five seconds. Source: <a href="https://wheretheiss.at/" rel="noopener" target="_blank">Where The ISS At</a>, propagated from current NORAD orbital elements.</p>
+    </section>
+
+    <!-- Sun -->
+    <section class="section" aria-labelledby="sun-title">
+      <div class="lesson-head">
+        <h2 id="sun-title">The Sun right now</h2>
+        <a class="btn btn-ghost" href="/explorer.html?focus=sun&layers=weather">See the halo in 3D</a>
+      </div>
+      <div class="grid grid-3">
+        <div class="stat-tile" data-state="loading">
+          <span class="stat-label">X-ray flare class</span>
+          <div class="sun-gauge"><div class="disc" id="sun-disc" aria-hidden="true"></div><span class="stat-value" id="sun-xray">—</span></div>
+          <span class="stat-sub" id="sun-xray-note">GOES 0.1–0.8 nm channel</span>
+        </div>
+        <div class="stat-tile" data-state="loading"><span class="stat-label">Planetary Kp index</span><span class="stat-value" id="sun-kp">—</span><span class="stat-sub" id="sun-kp-label">geomagnetic activity, 0–9</span></div>
+        <div class="stat-tile" data-state="loading"><span class="stat-label">Solar wind</span><span class="stat-value" id="sun-wind">—</span><span class="stat-sub" id="sun-density">proton speed at L1</span></div>
+      </div>
+      <p class="source-note">Classes run A, B, C, M, X — each letter is ten times stronger than the last. Kp of 5 or more means a geomagnetic storm and a good chance of aurora at high latitudes. Source: <a href="https://www.swpc.noaa.gov/" rel="noopener" target="_blank">NOAA SWPC</a>, refreshed every ten minutes.</p>
+    </section>
+
+    <!-- Asteroids -->
+    <section class="section" aria-labelledby="neo-title">
+      <div class="lesson-head">
+        <h2 id="neo-title">Asteroid passes, next three days</h2>
+        <a class="btn btn-ghost" href="/explorer.html?focus=earth&layers=asteroids">Show around Earth in 3D</a>
+      </div>
+      <p id="neo-summary">Loading close approaches from NASA…</p>
+      <div class="table-wrap">
+        <table class="data" id="neo-table">
+          <thead>
+            <tr>
+              <th scope="col">Object</th>
+              <th scope="col">Closest approach (UTC)</th>
+              <th scope="col">Miss distance</th>
+              <th scope="col">Speed</th>
+              <th scope="col">Estimated size</th>
+              <th scope="col">Hazard flag</th>
+            </tr>
+          </thead>
+          <tbody id="neo-body">
+            <tr><td colspan="6">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="source-note">1 LD (lunar distance) = 384,400 km, the average Earth–Moon distance. &ldquo;Potentially hazardous&rdquo; is a formal orbital category (within 0.05 AU and brighter than magnitude 22), not a prediction of impact. Source: <a href="https://cneos.jpl.nasa.gov/" rel="noopener" target="_blank">NASA NeoWs / JPL CNEOS</a>.</p>
+    </section>
+
+    <section class="section" aria-labelledby="teach-title">
+      <h2 id="teach-title">Use it in class</h2>
+      <div class="grid grid-3">
+        <article class="card">
+          <h3>Warm-up (5 min)</h3>
+          <p>Project this page. Ask: is the ISS over land or ocean right now? Which hemisphere? Refresh after two minutes and estimate how far it moved.</p>
+        </article>
+        <article class="card">
+          <h3>Data literacy (15 min)</h3>
+          <p>Sort the asteroid table by miss distance. Which pass is closest in lunar distances? Convert it to kilometres and compare to the Moon.</p>
+        </article>
+        <article class="card">
+          <h3>Extension</h3>
+          <p>If Kp is 4 or more, look up tonight&rsquo;s aurora forecast for your latitude. Link the Kp number to the space-weather halo in the <a href="/lessons.html#lesson-scale-of-space">Scale of Space</a> lesson.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span class="brand">SOLARIS</span>
+    <nav aria-label="Footer">
+      <a href="/today.html">Today in space</a>
+      <a href="/lessons.html">Lesson plans</a>
+      <a href="/about.html">Data sources</a>
+      <a href="/press.html">Press</a>
+      <a href="mailto:contact@solarisvr.com">contact@solarisvr.com</a>
+    </nav>
+    <span>&copy; <span data-year>2026</span> Solaris</span>
+  </footer>
+
+  <script>
+    (function () {
+      document.querySelectorAll('[data-year]').forEach(function (el) { el.textContent = String(new Date().getFullYear()); });
+
+      var $ = function (id) { return document.getElementById(id); };
+      var setState = function (el, state) { var tile = el && el.closest('.stat-tile'); if (tile) tile.dataset.state = state; };
+      var fmtInt = function (n) { return Math.round(n).toLocaleString(); };
+
+      function renderIss(iss) {
+        var ids = ['iss-lat', 'iss-lon', 'iss-alt', 'iss-speed'];
+        if (!iss) {
+          ids.forEach(function (id) { $(id).textContent = 'Feed unavailable'; setState($(id), 'error'); });
+          return;
+        }
+        $('iss-lat').textContent = Math.abs(iss.lat).toFixed(2) + '°' + (iss.lat >= 0 ? ' N' : ' S');
+        $('iss-hemi').textContent = iss.lat >= 0 ? 'Northern hemisphere' : 'Southern hemisphere';
+        $('iss-lon').textContent = Math.abs(iss.lon).toFixed(2) + '°' + (iss.lon >= 0 ? ' E' : ' W');
+        $('iss-side').textContent = iss.visibility === 'daylight' ? 'Over the daylit side' : 'Over the night side';
+        $('iss-alt').textContent = fmtInt(iss.altitudeKm) + ' km';
+        $('iss-speed').textContent = fmtInt(iss.velocityKmh) + ' km/h';
+        ids.forEach(function (id) { setState($(id), 'ready'); });
+      }
+
+      function renderWeather(w) {
+        var ids = ['sun-xray', 'sun-kp', 'sun-wind'];
+        if (!w) {
+          ids.forEach(function (id) { $(id).textContent = 'Feed unavailable'; setState($(id), 'error'); });
+          return;
+        }
+        var letter = String(w.xrayClass || 'A')[0];
+        var glow = { A: 10, B: 14, C: 22, M: 36, X: 56 }[letter] || 14;
+        $('sun-xray').textContent = w.xrayClass || 'n/a';
+        $('sun-disc').style.setProperty('--glow', glow + 'px');
+        $('sun-xray-note').textContent = { A: 'Very quiet', B: 'Quiet', C: 'Minor flares', M: 'Moderate flare in progress', X: 'Major flare in progress' }[letter] || 'GOES 0.1–0.8 nm channel';
+        $('sun-kp').textContent = w.kp === null || w.kp === undefined ? 'n/a' : Number(w.kp).toFixed(1);
+        $('sun-kp-label').textContent = w.kpLabel || 'geomagnetic activity, 0–9';
+        $('sun-wind').textContent = w.windSpeedKms ? fmtInt(w.windSpeedKms) + ' km/s' : 'n/a';
+        $('sun-density').textContent = w.windDensity ? Number(w.windDensity).toFixed(1) + ' protons/cm³' : 'proton speed at L1';
+        ids.forEach(function (id) { setState($(id), 'ready'); });
+      }
+
+      function renderAsteroids(a) {
+        var body = $('neo-body');
+        var summary = $('neo-summary');
+        if (!a || !a.objects) {
+          summary.textContent = 'The NASA asteroid feed is temporarily unavailable. Try again in a few minutes.';
+          body.innerHTML = '<tr><td colspan="6">Feed unavailable</td></tr>';
+          return;
+        }
+        var hazardous = a.objects.filter(function (o) { return o.hazardous; }).length;
+        var closest = a.objects[0];
+        summary.textContent = a.count + ' known asteroids pass within range from ' + a.date + '. ' +
+          (closest ? 'Closest: ' + closest.name + ' at ' + closest.missDistanceLunar.toFixed(1) + ' lunar distances. ' : '') +
+          (hazardous ? hazardous + ' carry the potentially-hazardous flag.' : 'None carry the potentially-hazardous flag.') +
+          (a.demoKey ? ' (Using NASA demo quota — set NASA_API_KEY for a higher limit.)' : '');
+        body.innerHTML = '';
+        a.objects.slice(0, 12).forEach(function (o) {
+          var tr = document.createElement('tr');
+          var cells = [
+            o.url ? '<a href="' + o.url + '" rel="noopener" target="_blank">' + o.name + '</a>' : o.name,
+            o.approachTime,
+            '<span class="num">' + o.missDistanceLunar.toFixed(1) + ' LD</span> · ' + (o.missDistanceKm >= 1e6 ? (o.missDistanceKm / 1e6).toFixed(2) + ' million km' : fmtInt(o.missDistanceKm) + ' km'),
+            o.velocityKms.toFixed(1) + ' km/s',
+            fmtInt(o.diameterMinM) + '–' + fmtInt(o.diameterMaxM) + ' m',
+            o.hazardous ? '<span class="haz">PHA</span>' : '—'
+          ];
+          cells.forEach(function (html, i) {
+            var td = document.createElement('td');
+            if (i > 0) td.className = 'num';
+            td.innerHTML = html;
+            tr.appendChild(td);
+          });
+          body.appendChild(tr);
+        });
+      }
+
+      function stamp() {
+        $('updated').textContent = 'Updated ' + new Date().toLocaleTimeString() + ' · ISS refreshes every 5 s, Sun every 10 min, asteroids hourly.';
+      }
+
+      fetch('/api/live', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          renderIss(data.iss);
+          renderWeather(data.weather);
+          renderAsteroids(data.asteroids);
+          stamp();
+        })
+        .catch(function () {
+          renderIss(null); renderWeather(null); renderAsteroids(null);
+          $('updated').textContent = 'Could not reach the live feed. Check your connection and reload.';
+        });
+
+      setInterval(function () {
+        if (document.hidden) return;
+        fetch('/api/live?feed=iss', { cache: 'no-store' })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (iss) { if (iss) { renderIss(iss); stamp(); } })
+          .catch(function () {});
+      }, 5000);
+    })();
+  </script>
+</body>
+</html>
