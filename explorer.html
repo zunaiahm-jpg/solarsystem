@@ -6,6 +6,36 @@
   <title>Solar System — A Semirealistic 8K Model</title>
   <meta name="description" content="Explore the Solar System in adaptive 8K detail with free NASA imagery, immersive planetary terrain, and WebXR VR support." />
   <meta name="theme-color" content="#020202" />
+  <link rel="canonical" href="https://solarisvr.com/explorer.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Solaris Explorer — A Semirealistic 8K Solar System" />
+  <meta property="og:description" content="Fly through an 8K solar system with live ISS, asteroid and space-weather layers, narrated tours and WebXR VR." />
+  <meta property="og:url" content="https://solarisvr.com/explorer.html" />
+  <meta property="og:image" content="https://solarisvr.com/assets/landing/space-explorer.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "@id": "https://solarisvr.com/explorer.html#app",
+    "name": "Solaris Explorer",
+    "url": "https://solarisvr.com/explorer.html",
+    "description": "Explore the Solar System in adaptive 8K detail with free NASA imagery, live ISS, asteroid and space-weather layers, narrated classroom tours and WebXR VR support.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Any (WebGL 2, WebXR)",
+    "browserRequirements": "Requires WebGL 2. VR requires a WebXR-capable browser.",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "isPartOf": { "@id": "https://solarisvr.com/#website" },
+    "publisher": { "@id": "https://solarisvr.com/#org" },
+    "potentialAction": [
+      { "@type": "ViewAction", "name": "Fly to Earth", "target": "https://solarisvr.com/explorer.html?focus=earth" },
+      { "@type": "ViewAction", "name": "Ride along with the ISS", "target": "https://solarisvr.com/explorer.html?ride=iss" },
+      { "@type": "ListenAction", "name": "Start the Inner Planets tour", "target": "https://solarisvr.com/explorer.html?tour=inner-planets" }
+    ]
+  }
+  </script>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -318,7 +348,7 @@
 
   <!-- ═══════════════════════════════════════════
        ABOUT MODAL
-  ═══════════════════════════════════════════ -->
+  ════════════════════════════════════���══════ -->
   <div id="about-modal" class="modal-backdrop" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="about-title">
       <button id="about-close" class="modal-close" type="button" aria-label="Close">✕</button>

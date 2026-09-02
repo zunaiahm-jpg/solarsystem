@@ -6,6 +6,60 @@
   <title>Solaris — Explore the Solar System</title>
   <meta name="description" content="Solaris is an immersive, interactive 8K model of our solar system with real orbital data, live NASA imagery, and WebXR VR support." />
   <meta name="theme-color" content="#05070a" />
+  <link rel="canonical" href="https://solarisvr.com/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Solaris — Explore the Solar System" />
+  <meta property="og:description" content="An immersive, interactive 8K model of our solar system with real orbital data, live NASA and NOAA feeds, narrated classroom tours and WebXR VR." />
+  <meta property="og:url" content="https://solarisvr.com/" />
+  <meta property="og:image" content="https://solarisvr.com/assets/landing/solar-horizon.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://solarisvr.com/#website",
+        "url": "https://solarisvr.com/",
+        "name": "Solaris",
+        "description": "An interactive 8K model of the solar system with real orbital data, live NASA and NOAA feeds, narrated classroom tours and WebXR VR.",
+        "publisher": { "@id": "https://solarisvr.com/#org" },
+        "inLanguage": "en"
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://solarisvr.com/#org",
+        "name": "Solaris",
+        "url": "https://solarisvr.com/",
+        "logo": "https://solarisvr.com/icon.svg",
+        "email": "contact@solarisvr.com"
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://solarisvr.com/explorer.html#app",
+        "name": "Solaris Explorer",
+        "url": "https://solarisvr.com/explorer.html",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any (WebGL 2, WebXR)",
+        "browserRequirements": "Requires WebGL 2. VR requires a WebXR-capable browser.",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "featureList": [
+          "8K NASA-derived planet textures",
+          "Live ISS ride-along",
+          "Near-Earth asteroid overlay",
+          "Space weather on the Sun",
+          "Narrated NGSS classroom tours",
+          "Low-bandwidth mode",
+          "WebXR virtual reality"
+        ],
+        "screenshot": "https://solarisvr.com/assets/landing/space-explorer.png",
+        "publisher": { "@id": "https://solarisvr.com/#org" }
+      }
+    ]
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Jura:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -30,6 +84,9 @@
     <header class="landing-header">
       <a class="brand" href="/" aria-label="Solaris home">SOLARIS</a>
       <nav class="header-nav" aria-label="Site navigation">
+        <a class="header-link" href="/today.html">Today</a>
+        <a class="header-link" href="/lessons.html">Lessons</a>
+        <a class="header-link" href="/worlds/earth.html">Worlds</a>
         <a class="header-link" href="/spaceedu/">SpaceEdu</a>
         <button class="about-trigger" type="button" popovertarget="about-panel" aria-label="Open information about this project">
           <span>About</span>

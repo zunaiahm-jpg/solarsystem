@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /api/
+Disallow: /spaceedu/_next/
+
+Sitemap: https://solarisvr.com/sitemap.xml
