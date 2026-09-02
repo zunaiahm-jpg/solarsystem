@@ -4,18 +4,46 @@ import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { PLANETS_DATA, SUN_DATA } from './data.js';
 
-const TEXTURE_ROOT = './assets/textures/';
-const LIVE_EARTH_CLOUDS = 'https://clouds.matteason.co.uk/images/8192x4096/clouds-alpha.png';
+// Low-bandwidth mode swaps the ~70 MB 8K texture set for the ~5 MB set in
+// /textures. It is enabled by ?lite=1, a saved preference from the settings
+// panel, or automatically when the browser reports Data Saver / a 2G–3G link.
+export const LITE_MODE = (() => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('lite')) return params.get('lite') !== '0';
+    const saved = window.localStorage.getItem('solaris-lite');
+    if (saved === '1') return true;
+    if (saved === '0') return false;
+    const connection = navigator.connection;
+    if (connection?.saveData) return true;
+    if (/(^|-)2g$|^3g$/.test(connection?.effectiveType || '')) return true;
+  } catch { /* privacy modes may block storage */ }
+  return false;
+})();
+
+const TEXTURE_ROOT = LITE_MODE ? './textures/' : './assets/textures/';
+const LIVE_EARTH_CLOUDS = LITE_MODE
+  ? 'https://clouds.matteason.co.uk/images/2048x1024/clouds-alpha.png'
+  : 'https://clouds.matteason.co.uk/images/8192x4096/clouds-alpha.png';
 const J2000 = Date.UTC(2000, 0, 1, 12, 0, 0);
 const J2000_LONGITUDE = {
   mercury: 252.251, venus: 181.980, earth: 100.464, mars: 355.453,
   jupiter: 34.404, saturn: 49.944, uranus: 313.232, neptune: 304.880
 };
-const TEXTURES = {
-  mercury: '8k_mercury.jpg', venus: '8k_venus_surface.jpg', earth: '8k_earth_daymap.jpg',
-  mars: '8k_mars.jpg', jupiter: '8k_jupiter.jpg', saturn: '8k_saturn.jpg',
-  uranus: '2k_uranus.jpg', neptune: '2k_neptune.jpg'
-};
+const TEXTURES = LITE_MODE
+  ? {
+    mercury: 'mercury.jpg', venus: 'venus_atmosphere.jpg', earth: 'earth_daymap.jpg',
+    mars: 'mars.jpg', jupiter: 'jupiter.jpg', saturn: 'saturn.jpg',
+    uranus: 'uranus.jpg', neptune: 'neptune.jpg'
+  }
+  : {
+    mercury: '8k_mercury.jpg', venus: '8k_venus_surface.jpg', earth: '8k_earth_daymap.jpg',
+    mars: '8k_mars.jpg', jupiter: '8k_jupiter.jpg', saturn: '8k_saturn.jpg',
+    uranus: '2k_uranus.jpg', neptune: '2k_neptune.jpg'
+  };
+const TEXTURE_SUN = LITE_MODE ? 'sun.jpg' : '8k_sun.jpg';
+const TEXTURE_MOON = LITE_MODE ? 'moon.jpg' : '8k_moon.jpg';
+const TEXTURE_RINGS = LITE_MODE ? 'saturn_ring_alpha.png' : '8k_saturn_ring_alpha.png';
 
 const ATMO_VERT = `
   varying vec3 vWorldNormal;
@@ -160,7 +188,7 @@ function makeSunFlareTexture() {
 }
 
 function createSun(scene) {
-  const texture = loadTexture('8k_sun.jpg');
+  const texture = loadTexture(TEXTURE_SUN);
   const geometry = new THREE.SphereGeometry(SUN_DATA.radius, 128, 128);
   const material = new THREE.MeshBasicMaterial({ map: texture, color: 0xfff1c2 });
   sunMesh = new THREE.Mesh(geometry, material);
@@ -206,7 +234,8 @@ function makePlanetMaterial(data) {
     color: 0xffffff
   };
 
-  if (data.id === 'earth') {
+  // The 3 MB night-lights map has no low-res twin; skip it in lite mode.
+  if (data.id === 'earth' && !LITE_MODE) {
     parameters.emissiveMap = loadTexture('8k_earth_nightmap.jpg');
     parameters.emissive = new THREE.Color(0xffbd70);
     parameters.emissiveIntensity = 1.15;
@@ -297,7 +326,7 @@ function createSaturnRings(radius) {
     vector.fromBufferAttribute(position, index);
     uv.setXY(index, (vector.length() - inner) / (outer - inner), 0.5);
   }
-  const texture = loadTexture('8k_saturn_ring_alpha.png');
+  const texture = loadTexture(TEXTURE_RINGS);
   const material = new THREE.MeshStandardMaterial({
     map: texture,
     alphaMap: texture,
@@ -361,7 +390,7 @@ function makeSelectionRing(radius) {
 
 function createMoon(moonData, parent, initialAngle) {
   const isEarthMoon = moonData.name === 'Moon';
-  const texture = isEarthMoon ? loadTexture('8k_moon.jpg') : null;
+  const texture = isEarthMoon ? loadTexture(TEXTURE_MOON) : null;
   const material = new THREE.MeshStandardMaterial({
     map: texture,
     color: texture ? 0xffffff : moonData.color,
@@ -443,7 +472,7 @@ export function createSolarSystem(scene, renderer) {
 
   if (renderer) {
     maxAnisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
-    const lowPower = navigator.deviceMemory && navigator.deviceMemory <= 4;
+    const lowPower = LITE_MODE || (navigator.deviceMemory && navigator.deviceMemory <= 4);
     sphereSegments = lowPower ? 64 : 256;
   }
 

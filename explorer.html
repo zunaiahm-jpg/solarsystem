@@ -136,6 +136,36 @@
       <button class="s-btn" id="btn-reset" type="button">Reset view</button>
       <button class="s-btn" id="btn-vr" type="button" aria-label="Enter VR" title="Enter VR — step inside the solar system">Enter VR</button>
 
+      <p class="s-section" aria-hidden="true">Live data</p>
+      <label class="s-row"><span class="s-label">ISS</span><input type="checkbox" id="toggle-iss" /></label>
+      <label class="s-row"><span class="s-label">Asteroids</span><input type="checkbox" id="toggle-asteroids" /></label>
+      <label class="s-row"><span class="s-label">Space weather</span><input type="checkbox" id="toggle-weather" /></label>
+      <p id="live-status" class="s-live" aria-live="polite"></p>
+      <button class="s-btn" id="btn-iss-ride" type="button" title="Follow the International Space Station in real time">Ride along with the ISS</button>
+
+      <p class="s-section" aria-hidden="true">Classroom</p>
+      <label class="s-row" for="tour-select">
+        <span class="s-label">Tour</span>
+        <select id="tour-select" aria-label="Choose a guided tour"></select>
+      </label>
+      <button class="s-btn" id="btn-tour" type="button">Start narrated tour</button>
+      <label class="s-row"><span class="s-label">Low bandwidth</span><input type="checkbox" id="toggle-lite" /></label>
+
+    </div>
+  </div>
+
+  <!-- Guided tour caption bar (hidden until a tour starts) -->
+  <div id="tour-bar" class="hidden" role="region" aria-label="Guided tour narration">
+    <div class="tour-meta">
+      <span id="tour-title" class="tour-title"></span>
+      <span id="tour-step" class="tour-step"></span>
+    </div>
+    <p id="tour-text" class="tour-text" aria-live="polite"></p>
+    <div class="tour-actions">
+      <button type="button" id="tour-prev" class="tour-btn" aria-label="Previous stop">Back</button>
+      <button type="button" id="tour-voice" class="tour-btn" aria-pressed="true">Voice on</button>
+      <button type="button" id="tour-next" class="tour-btn" aria-label="Next stop">Next</button>
+      <button type="button" id="tour-stop" class="tour-btn tour-btn-stop" aria-label="End tour">End tour</button>
     </div>
   </div>
 
