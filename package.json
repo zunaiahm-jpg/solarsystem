@@ -8,6 +8,6 @@
     "start": "serve . -l 3000 --no-clipboard"
   },
   "devDependencies": {
-    "serve": "^14.2.4"
+    "serve": "^14.2.6"
   }
 }
