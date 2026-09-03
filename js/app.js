@@ -5,24 +5,27 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
-import { setupVR, updateVR, isPresenting } from './vr.js?v=astronaut-8';
+// Module specifiers are kept free of cache-busting query strings: a module
+// imported under two different URLs is instantiated twice by the browser,
+// which used to load and run data.js a second time on every page load.
+import { setupVR, updateVR, isPresenting, setSurfaceMode } from './vr.js';
+import { PlanetarySurfaces } from './planetarySurfaces.js';
 
 import {
   createStarField, createFamousStars, createConstellations,
   updateStars, setStarsVisible, setConstellationsVisible, starObjects
-} from './stars.js?v=astronaut-8';
+} from './stars.js';
 import {
   createSolarSystem, updateSolarSystem, updateOrbitResolution, solarSystemObjects,
   setPlanetsVisible, setOrbitsVisible,
   selectObject, deselectAll
-} from './solarSystem.js?v=astronaut-8';
-import { createNebulae, updateNebulae, setNebulaeVisible, nebulaObjects } from './nebulae.js?v=astronaut-8';
-import { createLabels, updateLabels, setLabelsVisible } from './labels.js?v=astronaut-8';
+} from './solarSystem.js';
+import { createNebulae, updateNebulae, setNebulaeVisible, nebulaObjects } from './nebulae.js';
+import { createLabels, updateLabels, setLabelsVisible } from './labels.js';
 import {
-  setupUI, showInfoPanel, closeInfoPanel, showTooltip, hideTooltip,
-  updateCoordinates, updateZoomLevel, updateCompass, setupViewButtons,
-  highlightSidebarPlanet, clearSidebarHighlight
-} from './ui.js?v=astronaut-8';
+  setupUI, showInfoPanel, closeInfoPanel, showTooltip, hideTooltip, setupViewButtons,
+  highlightSidebarPlanet, clearSidebarHighlight, updateSurfaceStatus
+} from './ui.js';
 
 // ─── Renderer ───────────────────────────────────────────────────────────────
 const canvas = document.getElementById('space-canvas');
@@ -88,6 +91,22 @@ requestAnimationFrame(() => {
   allClickable = [...solarSystemObjects, ...starObjects, ...nebulaObjects];
   createLabels(scene, allClickable);
 });
+
+const surfaces = new PlanetarySurfaces({
+  scene,
+  camera,
+  controls,
+  renderer,
+  onStateChange: state => {
+    updateSurfaceStatus(state);
+    setSurfaceMode(state.active, state.body);
+    if (state.phase === 'surface') {
+      followedMesh = null;
+      followLastPosition = null;
+    }
+  }
+});
+updateSurfaceStatus({ quality: surfaces.quality, phase: 'orbit' });
 
 // ─── Immersive VR ────────────────────────────────────────────────────────────
 // The headset user is placed on a camera rig (see js/vr.js) so they arrive in
@@ -169,7 +188,7 @@ function flyToObjectId(objectId) {
   }
 }
 
-// ─── Mouse events ─────────────────────────────────────────────────────────────
+// ─��─ Mouse events ─────────────────────────────────────────────────────────────
 window.addEventListener('mousemove', (e) => {
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -211,9 +230,7 @@ window.addEventListener('resize', () => {
 
 // ─── UI setup ─────────────────────────────────────────────────────────────────
 setupUI({
-  camera,
   controls,
-  scene,
   layerCallbacks: {
     planets: setPlanetsVisible,
     orbits: setOrbitsVisible,
@@ -223,34 +240,31 @@ setupUI({
     labels: setLabelsVisible
   },
   flyToCallback: flyToObjectId,
-  sidebarSelectCallback: null, // sidebar already flies via flyToCallback
-  selectCallback: (mesh) => selectMesh(mesh),
+  surfaceSupported: object => surfaces.supports(object),
+  onLandSurface: object => surfaces.land(object),
+  onReturnOrbit: () => surfaces.returnToOrbit(),
   onLoaded: () => { /* scene already built */ }
 });
 
+// Preset viewpoints. All three buttons do the same thing — deselect, then
+// glide to a fixed camera position — so they share one implementation.
+const SOLAR_SYSTEM_VIEW = new THREE.Vector3(0, 65, 200);
+const WIDE_VIEW = new THREE.Vector3(200, 600, 1200);
+const ORIGIN = new THREE.Vector3(0, 0, 0);
+
+function goToView(position, { snapTarget = false } = {}) {
+  deselect();
+  flyFrom = camera.position.clone();
+  flyDest = position.clone();
+  flyLook = ORIGIN.clone();
+  flyT = 0;
+  if (snapTarget) controls.target.set(0, 0, 0);
+}
+
 setupViewButtons({
-  solarSystem: () => {
-    deselect();
-    flyFrom = camera.position.clone();
-    flyDest = new THREE.Vector3(0, 65, 200);
-    flyLook = new THREE.Vector3(0, 0, 0);
-    flyT = 0;
-  },
-  galaxy: () => {
-    deselect();
-    flyFrom = camera.position.clone();
-    flyDest = new THREE.Vector3(200, 600, 1200);
-    flyLook = new THREE.Vector3(0, 0, 0);
-    flyT = 0;
-  },
-  reset: () => {
-    deselect();
-    flyFrom = camera.position.clone();
-    flyDest = new THREE.Vector3(0, 65, 200);
-    flyLook = new THREE.Vector3(0, 0, 0);
-    flyT = 0;
-    controls.target.set(0, 0, 0);
-  }
+  solarSystem: () => goToView(SOLAR_SYSTEM_VIEW),
+  galaxy: () => goToView(WIDE_VIEW),
+  reset: () => goToView(SOLAR_SYSTEM_VIEW, { snapTarget: true })
 });
 
 // ─── Animation loop ───────────────────────────────────────────────────────────
@@ -271,14 +285,15 @@ function animate() {
     if (flyLook) controls.target.lerp(flyLook, t * 0.4);
   }
 
-  // Update systems
-  updateSolarSystem(elapsed, timeScale);
+  // Update systems. Orbital motion pauses while the visitor is standing on a world.
+  updateSolarSystem(elapsed, surfaces.isActive() ? 0 : timeScale);
+  surfaces.update(delta);
   updateStars(elapsed);
   updateNebulae(elapsed);
   updateLabels(camera);
 
   // Camera follows the selected object as it orbits (once fly-in has settled)
-  if (!inVR && followedMesh && flyT >= 1) {
+  if (!inVR && !surfaces.isActive() && followedMesh && flyT >= 1) {
     const wp = new THREE.Vector3();
     followedMesh.getWorldPosition(wp);
     if (followLastPosition) {
@@ -305,11 +320,6 @@ function animate() {
     renderer.render(scene, camera);
     return;
   }
-
-  // Update UI elements
-  updateCoordinates(camera.position);
-  updateZoomLevel(camera.position.distanceTo(controls.target));
-  updateCompass(camera);
 
   controls.update();
   composer.render();
