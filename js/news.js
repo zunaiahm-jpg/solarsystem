@@ -26,6 +26,24 @@ export function renderNewsFeed(limit = 4) {
   const container = document.getElementById('latest-developments');
   if (!container) return;
 
+  const createExternalLink = (className, url, label) => {
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch (_err) {
+      return null;
+    }
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) return null;
+
+    const link = document.createElement('a');
+    link.className = className;
+    link.href = parsedUrl.href;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = label;
+    return link;
+  };
+
   // Render a static educational fallback linking to reliable sources.
   const renderFallback = () => {
     const links = [
@@ -36,9 +54,15 @@ export function renderNewsFeed(limit = 4) {
       { label: 'Hubble News', url: 'https://science.nasa.gov/mission/hubble/' },
       { label: 'Webb News', url: 'https://webb.nasa.gov/' }
     ];
-    container.innerHTML =
-      '<div class="news-fallback">Live feed unavailable — explore these authoritative sources:</div>' +
-      links.map(l => `<a class="news-link" href="${l.url}" target="_blank" rel="noopener noreferrer">${l.label} ↗</a>`).join('');
+    container.replaceChildren();
+    const message = document.createElement('div');
+    message.className = 'news-fallback';
+    message.textContent = 'Live feed unavailable — explore these authoritative sources:';
+    container.appendChild(message);
+    links.forEach(({ label, url }) => {
+      const link = createExternalLink('news-link', url, `${label} ↗`);
+      if (link) container.appendChild(link);
+    });
   };
 
   if (fetchFailed || !cachedItems.length) {
@@ -46,7 +70,8 @@ export function renderNewsFeed(limit = 4) {
     return;
   }
 
-  container.innerHTML = cachedItems.slice(0, limit).map(item => {
+  container.replaceChildren();
+  cachedItems.slice(0, limit).forEach(item => {
     const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString(undefined, {
       month: 'short', day: '2-digit', year: 'numeric'
     }) : '';
@@ -55,11 +80,19 @@ export function renderNewsFeed(limit = 4) {
       .replace(/&nbsp;/g, ' ')
       .trim()
       .slice(0, 130) + '…';
-    return `
-      <a class="news-card" href="${item.link}" target="_blank" rel="noopener noreferrer">
-        <div class="news-date">${date}</div>
-        <div class="news-title">${item.title}</div>
-        <div class="news-snippet">${stripped}</div>
-      </a>`;
-  }).join('');
+
+    const card = createExternalLink('news-card', item.link, '');
+    if (!card) return;
+    const dateElement = document.createElement('div');
+    dateElement.className = 'news-date';
+    dateElement.textContent = date;
+    const titleElement = document.createElement('div');
+    titleElement.className = 'news-title';
+    titleElement.textContent = item.title || '';
+    const snippetElement = document.createElement('div');
+    snippetElement.className = 'news-snippet';
+    snippetElement.textContent = stripped;
+    card.append(dateElement, titleElement, snippetElement);
+    container.appendChild(card);
+  });
 }
