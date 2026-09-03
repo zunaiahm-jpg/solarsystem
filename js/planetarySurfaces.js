@@ -20,6 +20,24 @@ const SURFACES = {
   }
 };
 
+// One decoded copy per world. Landing, returning to orbit and landing again
+// used to re-download and re-decode the same 8K plate every single time.
+const surfaceTextureCache = new Map();
+const surfaceTextureLoader = new THREE.TextureLoader();
+
+function getSurfaceTexture(profile, renderer) {
+  let texture = surfaceTextureCache.get(profile.texture);
+  if (!texture) {
+    texture = surfaceTextureLoader.load(`${TEXTURE_ROOT}${profile.texture}`);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(5, 5);
+    texture.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
+    surfaceTextureCache.set(profile.texture, texture);
+  }
+  return texture;
+}
+
 function fract(value) { return value - Math.floor(value); }
 function noise(x, z) {
   const a = fract(Math.sin(x * 12.9898 + z * 78.233) * 43758.5453);
@@ -128,11 +146,7 @@ export class PlanetarySurfaces {
     }
     geometry.computeVertexNormals();
 
-    const texture = new THREE.TextureLoader().load(`${TEXTURE_ROOT}${profile.texture}`);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(5, 5);
-    texture.anisotropy = Math.min(16, this.renderer.capabilities.getMaxAnisotropy());
+    const texture = getSurfaceTexture(profile, this.renderer);
     const material = new THREE.MeshStandardMaterial({ map: texture, color: profile.tint, roughness: profile.roughness, metalness: 0 });
     const ground = new THREE.Mesh(geometry, material);
     ground.receiveShadow = true;

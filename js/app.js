@@ -3,28 +3,29 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
-import { setupVR, updateVR, isPresenting, setSurfaceMode } from './vr.js?v=surface-2';
-import { PlanetarySurfaces } from './planetarySurfaces.js?v=surface-2';
+// Module specifiers are kept free of cache-busting query strings: a module
+// imported under two different URLs is instantiated twice by the browser,
+// which used to load and run data.js a second time on every page load.
+import { setupVR, updateVR, isPresenting, setSurfaceMode } from './vr.js';
+import { PlanetarySurfaces } from './planetarySurfaces.js';
 
 import {
   createStarField, createFamousStars, createConstellations,
   updateStars, setStarsVisible, setConstellationsVisible, starObjects
-} from './stars.js?v=astronaut-8';
+} from './stars.js';
 import {
   createSolarSystem, updateSolarSystem, updateOrbitResolution, solarSystemObjects,
   setPlanetsVisible, setOrbitsVisible,
   selectObject, deselectAll
-} from './solarSystem.js?v=astronaut-8';
-import { createNebulae, updateNebulae, setNebulaeVisible, nebulaObjects } from './nebulae.js?v=astronaut-8';
-import { createLabels, updateLabels, setLabelsVisible } from './labels.js?v=astronaut-8';
+} from './solarSystem.js';
+import { createNebulae, updateNebulae, setNebulaeVisible, nebulaObjects } from './nebulae.js';
+import { createLabels, updateLabels, setLabelsVisible } from './labels.js';
 import {
-  setupUI, showInfoPanel, closeInfoPanel, showTooltip, hideTooltip,
-  updateCoordinates, updateZoomLevel, updateCompass, setupViewButtons,
+  setupUI, showInfoPanel, closeInfoPanel, showTooltip, hideTooltip, setupViewButtons,
   highlightSidebarPlanet, clearSidebarHighlight, updateSurfaceStatus
-} from './ui.js?v=surface-2';
+} from './ui.js';
 
 // ─── Renderer ───────────────────────────────────────────────────────────────
 const canvas = document.getElementById('space-canvas');
@@ -66,12 +67,9 @@ const bloomPass = new UnrealBloomPass(
 );
 composer.addPass(bloomPass);
 
-// Subtle photographic film grain + vignette — adds a cinematic VFX finish
-// without crushing detail. Disabled on low-power devices for performance.
-if (!lowPowerDevice) {
-  const filmPass = new FilmPass(0.18, false);
-  composer.addPass(filmPass);
-}
+// No film-grain pass. Animated grain over a black sky is indistinguishable
+// from television static, and it was the single largest source of the crawling
+// speckle across the star field. Real space has no grain.
 composer.addPass(new OutputPass());
 
 // ─── Clock ────────────────────────────────────────────────────────────────────
@@ -190,7 +188,7 @@ function flyToObjectId(objectId) {
   }
 }
 
-// ─── Mouse events ─────────────────────────────────────────────────────────────
+// ─��─ Mouse events ─────────────────────────────────────────────────────────────
 window.addEventListener('mousemove', (e) => {
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -232,9 +230,7 @@ window.addEventListener('resize', () => {
 
 // ─── UI setup ─────────────────────────────────────────────────────────────────
 setupUI({
-  camera,
   controls,
-  scene,
   layerCallbacks: {
     planets: setPlanetsVisible,
     orbits: setOrbitsVisible,
@@ -244,37 +240,31 @@ setupUI({
     labels: setLabelsVisible
   },
   flyToCallback: flyToObjectId,
-  sidebarSelectCallback: null, // sidebar already flies via flyToCallback
-  selectCallback: (mesh) => selectMesh(mesh),
   surfaceSupported: object => surfaces.supports(object),
   onLandSurface: object => surfaces.land(object),
   onReturnOrbit: () => surfaces.returnToOrbit(),
   onLoaded: () => { /* scene already built */ }
 });
 
+// Preset viewpoints. All three buttons do the same thing — deselect, then
+// glide to a fixed camera position — so they share one implementation.
+const SOLAR_SYSTEM_VIEW = new THREE.Vector3(0, 65, 200);
+const WIDE_VIEW = new THREE.Vector3(200, 600, 1200);
+const ORIGIN = new THREE.Vector3(0, 0, 0);
+
+function goToView(position, { snapTarget = false } = {}) {
+  deselect();
+  flyFrom = camera.position.clone();
+  flyDest = position.clone();
+  flyLook = ORIGIN.clone();
+  flyT = 0;
+  if (snapTarget) controls.target.set(0, 0, 0);
+}
+
 setupViewButtons({
-  solarSystem: () => {
-    deselect();
-    flyFrom = camera.position.clone();
-    flyDest = new THREE.Vector3(0, 65, 200);
-    flyLook = new THREE.Vector3(0, 0, 0);
-    flyT = 0;
-  },
-  galaxy: () => {
-    deselect();
-    flyFrom = camera.position.clone();
-    flyDest = new THREE.Vector3(200, 600, 1200);
-    flyLook = new THREE.Vector3(0, 0, 0);
-    flyT = 0;
-  },
-  reset: () => {
-    deselect();
-    flyFrom = camera.position.clone();
-    flyDest = new THREE.Vector3(0, 65, 200);
-    flyLook = new THREE.Vector3(0, 0, 0);
-    flyT = 0;
-    controls.target.set(0, 0, 0);
-  }
+  solarSystem: () => goToView(SOLAR_SYSTEM_VIEW),
+  galaxy: () => goToView(WIDE_VIEW),
+  reset: () => goToView(SOLAR_SYSTEM_VIEW, { snapTarget: true })
 });
 
 // ─── Animation loop ───────────────────────────────────────────────────────────
@@ -330,11 +320,6 @@ function animate() {
     renderer.render(scene, camera);
     return;
   }
-
-  // Update UI elements
-  updateCoordinates(camera.position);
-  updateZoomLevel(camera.position.distanceTo(controls.target));
-  updateCompass(camera);
 
   controls.update();
   composer.render();
