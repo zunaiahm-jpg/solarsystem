@@ -1,0 +1,25 @@
+{
+  "name": "solarisvr-promo-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Self-contained Remotion promo ad for Solaris",
+  "scripts": {
+    "dev": "remotion studio src/index.ts",
+    "preview": "remotion still src/index.ts SolarisVRPromo out/preview.png --frame=360",
+    "preview:vertical": "remotion still src/index.ts SolarisVRPromoVertical out/vertical-preview.png --frame=360",
+    "render": "remotion render src/index.ts SolarisVRPromo out/solarisvr-ad.mp4",
+    "render:vertical": "remotion render src/index.ts SolarisVRPromoVertical out/solarisvr-ad-vertical.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.239",
+    "@remotion/google-fonts": "^4.0.239",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.239"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.6.3"
+  }
+}
