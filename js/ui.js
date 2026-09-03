@@ -1,72 +1,267 @@
-import { OBJECT_MEDIA, SEARCHABLE_OBJECTS } from './data.js';
+import { OBJECT_MEDIA, OBJECT_METRICS, EARTH_METRICS, SEARCHABLE_OBJECTS } from './data.js';
 import { loadLatestNews, renderNewsFeed } from './news.js';
 import * as THREE from 'three';
 
-let camera, controls;
+let controls;
 let onFlyTo = null;
 let selectedObject = null;
 let timeScale = 1;
+let onLandSurface = null;
+let onReturnOrbit = null;
+let surfaceSupported = () => false;
 
 // ---- Setup ----
 export function setupUI(opts) {
-  camera = opts.camera;
   controls = opts.controls;
   onFlyTo = opts.flyToCallback;
+  onLandSurface = opts.onLandSurface;
+  onReturnOrbit = opts.onReturnOrbit;
+  surfaceSupported = opts.surfaceSupported || surfaceSupported;
 
   setupSearch();
   setupLayerToggles(opts.layerCallbacks);
-  setupZoomControls();
   setupTimeControl();
   setupInfoPanel();
   setupBottomBar();
-  setupPlanetSidebar(opts.flyToCallback, opts.sidebarSelectCallback);
+  setupCameraSelect(opts.flyToCallback);
+  setupCornerControls();
+  setupSettingsPanel();
+  setupSurfaceControls();
   startLoadingSequence(opts.onLoaded);
   loadLatestNews().then(() => renderNewsFeed(3));
 }
 
-// ---- Planet sidebar (NASA Eyes style quick-select) ----
-let activeSidebarBtn = null;
-function setupPlanetSidebar(flyToCallback, selectCallback) {
-  const buttons = document.querySelectorAll('.planet-btn');
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-id');
-      highlightSidebarPlanet(id);
-      if (flyToCallback) flyToCallback(id);
-      if (selectCallback) selectCallback(id);
+// ---- Camera drop-down (jaksic-style object selector) ----
+// Builds the planet/moon option list and keeps it in sync with 3D selection.
+// Exported names kept for app.js compatibility.
+function setupCameraSelect(flyToCallback) {
+  const select = document.getElementById('camera-select');
+  if (!select) return;
+
+  const addOption = (value, label) => {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = label;
+    select.appendChild(opt);
+  };
+
+  addOption('', 'Overview');
+  SEARCHABLE_OBJECTS
+    .filter(o => o.category === 'solar-system')
+    .forEach(o => {
+      addOption(o.id, o.name);
+      SEARCHABLE_OBJECTS
+        .filter(m => m.category === 'moon' && m.parentId === o.id)
+        .forEach(m => addOption(m.id, `\u00a0\u00a0${m.name}`));
     });
+
+  select.addEventListener('change', () => {
+    if (!select.value) {
+      document.getElementById('btn-solar-system')?.click();
+      return;
+    }
+    if (flyToCallback) flyToCallback(select.value);
   });
 }
 
 export function highlightSidebarPlanet(id) {
-  const buttons = document.querySelectorAll('.planet-btn');
-  buttons.forEach(btn => {
-    if (btn.getAttribute('data-id') === id) {
-      btn.classList.add('active');
-      activeSidebarBtn = btn;
+  const select = document.getElementById('camera-select');
+  if (!select) return;
+  const key = String(id || '').toLowerCase();
+  const has = Array.from(select.options).some(o => o.value.toLowerCase() === key);
+  select.value = has ? (Array.from(select.options).find(o => o.value.toLowerCase() === key)?.value || '') : '';
+}
+
+export function clearSidebarHighlight() {
+  const select = document.getElementById('camera-select');
+  if (select) select.value = '';
+}
+
+// ---- Corner icons: fullscreen toggle + About modal ----
+function setupCornerControls() {
+  const fsBtn = document.getElementById('fullscreen-btn');
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen?.();
     } else {
-      btn.classList.remove('active');
+      document.documentElement.requestFullscreen?.();
+    }
+  };
+  fsBtn?.addEventListener('click', toggleFullscreen);
+  fsBtn?.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') toggleFullscreen(); });
+
+  const modal = document.getElementById('about-modal');
+  const openModal = () => { if (modal) modal.hidden = false; };
+  const closeModal = () => { if (modal) modal.hidden = true; };
+  const helpBtn = document.getElementById('help-btn');
+  helpBtn?.addEventListener('click', openModal);
+  helpBtn?.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openModal();
+    }
+  });
+  document.getElementById('btn-about')?.addEventListener('click', openModal);
+  document.getElementById('about-close')?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+}
+
+// ---- Settings panel collapse + Info toggle + Pause ----
+function setupSettingsPanel() {
+  const panel = document.getElementById('settings-panel');
+  const bodyToggle = document.getElementById('settings-toggle');
+  const controlsRail = document.getElementById('controls-rail');
+  const backdrop = document.getElementById('controls-backdrop');
+
+  const isMobile = () => window.matchMedia('(max-width: 700px)').matches;
+
+  // Slide the whole drawer in/out. `open === true` reveals the panel.
+  const setDrawer = (open) => {
+    document.body.classList.toggle('controls-closed', !open);
+    controlsRail?.setAttribute('aria-expanded', String(open));
+    controlsRail?.setAttribute('aria-label', open ? 'Close controls' : 'Open controls');
+    controlsRail?.setAttribute('title', open ? 'Close controls' : 'Open controls');
+  };
+
+  // The sidebar-toggle handle hides/unhides the drawer with the same button.
+  controlsRail?.addEventListener('click', () =>
+    setDrawer(document.body.classList.contains('controls-closed'))
+  );
+  backdrop?.addEventListener('click', () => setDrawer(false));
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !document.body.classList.contains('controls-closed') && isMobile()) {
+      setDrawer(false);
+    }
+  });
+
+  // Header caret collapses just the control list while the drawer stays open.
+  bodyToggle?.addEventListener('click', () => {
+    const collapsed = panel?.classList.toggle('panel-collapsed');
+    bodyToggle.setAttribute('aria-expanded', String(!collapsed));
+  });
+
+  // Start closed on phones (more screen for the scene), open on desktop.
+  setDrawer(!isMobile());
+
+  // Info checkbox toggles the bottom-left stats table
+  const infoToggle = document.getElementById('toggle-info');
+  infoToggle?.addEventListener('change', () => {
+    const stats = document.getElementById('obj-stats');
+    if (!stats) return;
+    stats.style.display = infoToggle.checked && selectedObject ? 'block' : 'none';
+  });
+
+  // Pause checkbox drives the simulation clock without moving the slider
+  const pauseToggle = document.getElementById('toggle-pause');
+  let resumeScale = 1;
+  pauseToggle?.addEventListener('change', () => {
+    const slider = document.getElementById('time-speed');
+    const label = document.getElementById('speed-label');
+    if (pauseToggle.checked) {
+      resumeScale = parseFloat(slider?.value || '1') || resumeScale;
+      window._spaceMapTimeScale = 0;
+      if (label) label.textContent = 'Paused';
+    } else {
+      window._spaceMapTimeScale = resumeScale;
+      if (slider) slider.value = String(resumeScale);
+      if (label) label.textContent = resumeScale + '×';
     }
   });
 }
 
-export function clearSidebarHighlight() {
-  if (activeSidebarBtn) activeSidebarBtn.classList.remove('active');
-  activeSidebarBtn = null;
-}
-
+// ---- Splash: jaksic-style Start button with integrated load progress ----
+// The button fills like the reference site's .progress pill: the % streams
+// into the label while textures load, then the visitor clicks to step in.
 function startLoadingSequence(onLoaded) {
   const bar = document.getElementById('loader-progress');
   const text = document.getElementById('loader-text');
   const screen = document.getElementById('loading-screen');
+  const startBtn = document.getElementById('start-btn');
+  const startLabel = document.getElementById('start-label');
+  const epoch = document.getElementById('cosmic-epoch');
   const startedAt = performance.now();
   let textureProgress = 0;
-  let finished = false;
+  let ready = false;
+  let entered = false;
+  let wantsEnter = false;
 
-  const setProgress = (value, message) => {
-    if (bar) bar.style.width = `${Math.min(100, value * 100)}%`;
-    if (text && message) text.textContent = message;
+  // Rapid cosmic-timeline ticker under the Start pill. It flips through the
+  // history of the universe while textures stream in, then locks on
+  // "Solar System" once the scene is ready. It only runs during load so it
+  // never adds any delay to entering the experience.
+  const COSMIC_EPOCHS = [
+    'Big Bang', 'Planck Epoch', 'Inflation', 'Quark Epoch', 'Hadron Epoch',
+    'Lepton Epoch', 'Nucleosynthesis', 'Photon Epoch', 'Recombination',
+    'First Stars', 'Reionization', 'First Galaxies', 'Galaxy Formation',
+    'Galaxy Groups', 'Galaxy Clusters', 'Superclusters', 'Cosmic Voids',
+    'Cosmic Web', 'Milky Way Galaxy', 'Solar System',
+  ];
+  let epochIndex = 0;
+  let epochTimer = null;
+
+  const stopEpochTicker = () => {
+    if (epochTimer) { clearInterval(epochTimer); epochTimer = null; }
+    if (epoch) {
+      epoch.classList.remove('is-hidden');
+      epoch.textContent = 'Solar System';
+    }
   };
+
+  if (epoch) {
+    epochTimer = setInterval(() => {
+      // Cycle quickly and stop one short of the end so the finale ("Solar
+      // System") is reserved for the moment the scene finishes loading.
+      if (epochIndex >= COSMIC_EPOCHS.length - 2) {
+        epochIndex = 0;
+      } else {
+        epochIndex += 1;
+      }
+      epoch.classList.add('is-hidden');
+      setTimeout(() => {
+        epoch.textContent = COSMIC_EPOCHS[epochIndex];
+        epoch.classList.remove('is-hidden');
+      }, 110);
+    }, 200);
+  }
+
+  // The loader line keeps its gently fading "Experience in VR" invitation,
+  // so we only stream the numeric progress into the Start pill here.
+  const setProgress = (value) => {
+    const pct = Math.min(100, Math.round(value * 100));
+    if (bar) bar.style.width = `${pct}%`;
+    if (startLabel && !ready) startLabel.textContent = pct > 2 ? `Start ${pct}%` : 'Start';
+  };
+
+  const enter = () => {
+    if (entered) return;
+    entered = true;
+    document.body.classList.add('app-started');
+    if (!screen) return;
+    screen.classList.add('fade-out');
+    setTimeout(() => {
+      screen.style.display = 'none';
+      if (onLoaded) onLoaded();
+    }, 800);
+  };
+
+  const markReady = (message = 'Visual systems online — press Start') => {
+    if (ready) return;
+    ready = true;
+    stopEpochTicker();
+    setProgress(1, message);
+    if (startLabel) startLabel.textContent = 'Start';
+    startBtn?.classList.add('ready');
+    if (wantsEnter) enter();
+  };
+
+  startBtn?.addEventListener('click', event => {
+    event.preventDefault();
+    if (ready) enter();
+    else {
+      wantsEnter = true;
+    }
+  });
 
   window.addEventListener('space-texture-progress', event => {
     const { loaded, total } = event.detail;
@@ -74,28 +269,13 @@ function startLoadingSequence(onLoaded) {
     setProgress(0.12 + textureProgress * 0.82, `Streaming cinematic imagery ${loaded}/${total}…`);
   });
 
-  const finish = () => {
-    if (finished) return;
-    finished = true;
-    setProgress(1, 'Visual systems online');
-    setTimeout(() => {
-      if (!screen) return;
-      screen.style.opacity = '0';
-      screen.style.transition = 'opacity .8s ease';
-      setTimeout(() => {
-        screen.style.display = 'none';
-        if (onLoaded) onLoaded();
-      }, 800);
-    }, 350);
+  const maybeReady = () => {
+    if (window._spaceTexturesReady && window._spaceSkyReady) markReady();
   };
-
-  const maybeFinish = () => {
-    if (window._spaceTexturesReady && window._spaceSkyReady) finish();
-  };
-  window.addEventListener('space-textures-ready', maybeFinish, { once: true });
+  window.addEventListener('space-textures-ready', maybeReady, { once: true });
   window.addEventListener('space-sky-ready', () => {
     setProgress(0.97, 'Photographic human-eye sky ready…');
-    maybeFinish();
+    maybeReady();
   }, { once: true });
   setProgress(0.08, 'Initializing orbital renderer…');
 
@@ -104,7 +284,7 @@ function startLoadingSequence(onLoaded) {
     const elapsed = performance.now() - startedAt;
     if ((window._spaceTexturesReady && window._spaceSkyReady) || elapsed > 30000) {
       clearInterval(watchdog);
-      finish();
+      markReady();
     } else if (elapsed > 2500 && textureProgress === 0) {
       setProgress(0.14, 'Connecting to deep-space image services…');
     } else if (window._spaceTexturesReady && !window._spaceSkyReady) {
@@ -180,6 +360,7 @@ function setupSearch() {
   input.addEventListener('input', renderResults);
   input.addEventListener('keydown', event => {
     if (event.key === 'Enter') {
+      if (event.isComposing || event.keyCode === 229) return;
       event.preventDefault();
       activateBestMatch();
     } else if (event.key === 'Escape') {
@@ -212,20 +393,6 @@ function setupLayerToggles(callbacks) {
   });
 }
 
-// ---- Zoom controls ----
-function setupZoomControls() {
-  document.getElementById('zoom-in')?.addEventListener('click', () => {
-    if (!camera) return;
-    camera.position.multiplyScalar(0.85);
-    if (controls) controls.update();
-  });
-  document.getElementById('zoom-out')?.addEventListener('click', () => {
-    if (!camera) return;
-    camera.position.multiplyScalar(1.18);
-    if (controls) controls.update();
-  });
-}
-
 // ---- Time speed ----
 function setupTimeControl() {
   const slider = document.getElementById('time-speed');
@@ -235,8 +402,42 @@ function setupTimeControl() {
     timeScale = parseFloat(slider.value);
     if (label) label.textContent = timeScale === 0 ? 'Paused' : timeScale + '×';
     window._spaceMapTimeScale = timeScale;
+    // Moving the slider by hand releases the Pause checkbox.
+    const pauseToggle = document.getElementById('toggle-pause');
+    if (pauseToggle && pauseToggle.checked && timeScale > 0) pauseToggle.checked = false;
   });
   window._spaceMapTimeScale = 1;
+}
+
+// ---- Surface exploration ----
+function setupSurfaceControls() {
+  document.getElementById('btn-land')?.addEventListener('click', () => {
+    if (selectedObject && onLandSurface) onLandSurface(selectedObject);
+  });
+  document.getElementById('btn-return-orbit')?.addEventListener('click', () => onReturnOrbit?.());
+}
+
+export function updateSurfaceStatus(state = {}) {
+  const section = document.getElementById('surface-explorer');
+  if (!section) return;
+  const active = !!state.active;
+  const progressWrap = document.getElementById('surface-progress-wrap');
+  const land = document.getElementById('btn-land');
+  const back = document.getElementById('btn-return-orbit');
+  section.classList.toggle('is-active', active);
+  if (land) land.hidden = active;
+  if (back) back.hidden = !active;
+  if (progressWrap) progressWrap.hidden = !active && !state.message;
+  const quality = document.getElementById('surface-quality');
+  const source = document.getElementById('surface-source');
+  const badge = document.getElementById('surface-availability');
+  const message = document.getElementById('surface-message');
+  const bar = document.getElementById('surface-progress');
+  if (quality && state.quality) quality.textContent = state.quality;
+  if (source && state.source) source.textContent = state.source;
+  if (message && state.message) message.textContent = state.message;
+  if (bar) bar.style.width = `${Math.round((state.progress || 0) * 100)}%`;
+  if (badge) badge.textContent = state.phase === 'surface' ? 'LANDED' : state.phase === 'orbit' ? 'READY' : String(state.phase || 'READY').toUpperCase();
 }
 
 // ---- Info panel ----
@@ -259,11 +460,22 @@ export function showInfoPanel(obj) {
   const data = obj.userData;
   const panel = document.getElementById('info-panel');
   if (!panel) return;
+  fillObjectStats(data);
 
   document.getElementById('info-icon').textContent = data.emoji || '⭐';
   document.getElementById('info-name').textContent = data.name || 'Unknown';
   document.getElementById('info-type').textContent = data.type || '';
   document.getElementById('info-description').textContent = data.description || '';
+
+  const surfaceSection = document.getElementById('surface-explorer');
+  if (surfaceSection) {
+    const supported = surfaceSupported(obj);
+    surfaceSection.classList.toggle('hidden', !supported);
+    if (supported) {
+      const summary = document.getElementById('surface-summary');
+      if (summary) summary.textContent = `Descend to ${data.name} with adaptive high-resolution terrain and WebXR-ready navigation.`;
+    }
+  }
 
   const statsEl = document.getElementById('info-stats');
   statsEl.innerHTML = '';
@@ -317,6 +529,7 @@ export function showInfoPanel(obj) {
 
   panel.classList.remove('hidden');
   panel.classList.add('visible');
+  document.getElementById('obj-actions')?.classList.remove('hidden');
 }
 
 function clearInfoMedia() {
@@ -331,10 +544,84 @@ function clearInfoMedia() {
 export function closeInfoPanel() {
   const panel = document.getElementById('info-panel');
   if (panel) { panel.classList.remove('visible'); panel.classList.add('hidden'); }
+  document.getElementById('obj-actions')?.classList.add('hidden');
   clearInfoMedia();
   selectedObject = null;
   clearSidebarHighlight();
   document.getElementById('latest-developments')?.classList.add('hidden');
+  const stats = document.getElementById('obj-stats');
+  if (stats) stats.style.display = 'none';
+}
+
+// ---- Bottom-left stats table (jaksic style: absolute + Earth-relative) ----
+const sig = (value, digits) => {
+  const rounded = Number(value.toPrecision(digits));
+  return String(rounded);
+};
+
+const formatDistance = km => {
+  if (km >= 1e9) return `${sig(km / 1e9, 3)}B km`;
+  if (km >= 1e6) return `${sig(km / 1e6, 3)}M km`;
+  return `${sig(km / 1e3, 3)}K km`;
+};
+const formatDiameter = km => `${sig(km / 1e3, km >= 1e5 ? 3 : 2)}K km`;
+const formatMass = earths => {
+  if (earths >= 10) return `${Math.round(earths)} M⊕`;
+  if (earths >= 1) return `${earths.toFixed(1)} M⊕`;
+  return `${sig(earths, 2)} M⊕`;
+};
+const formatYear = days => days >= 1000 ? `${sig(days / 1000, 2)}K days` : `${sig(days, 3)} days`;
+const formatDay = hours => hours >= 1000 ? `${sig(hours / 1000, 2)}K hours` : `${sig(hours, 3)} hours`;
+
+// Relative readout: "5.2x" for big ratios, "41%" below that (jaksic convention).
+const formatRelative = (value, base) => {
+  if (!base) return '';
+  const ratio = value / base;
+  if (ratio >= 2) return `${sig(ratio, 2)}x`;
+  return `${Math.round(ratio * 100)}%`;
+};
+
+function setStatRow(id, absText, relText) {
+  const row = document.getElementById(`row-${id}`);
+  if (!row) return;
+  if (absText == null) { row.style.display = 'none'; return; }
+  row.style.display = '';
+  const abs = document.getElementById(`v-${id}`);
+  const rel = document.getElementById(`r-${id}`);
+  if (abs) abs.textContent = absText;
+  if (rel) rel.textContent = relText || '';
+}
+
+function fillObjectStats(data) {
+  const wrap = document.getElementById('obj-stats');
+  if (!wrap) return;
+  const metrics = OBJECT_METRICS[String(data.id || data.name || '').toLowerCase()];
+  const infoEnabled = document.getElementById('toggle-info')?.checked ?? true;
+  if (!metrics || !infoEnabled) {
+    wrap.style.display = 'none';
+    return;
+  }
+  const nameEl = document.getElementById('stat-name');
+  if (nameEl) nameEl.textContent = data.name || '';
+
+  setStatRow('distance',
+    metrics.distanceKm == null ? null : formatDistance(metrics.distanceKm),
+    metrics.distanceKm == null ? null : formatRelative(metrics.distanceKm, EARTH_METRICS.distanceKm));
+  setStatRow('diameter',
+    metrics.diameterKm == null ? null : formatDiameter(metrics.diameterKm),
+    metrics.diameterKm == null ? null : formatRelative(metrics.diameterKm, EARTH_METRICS.diameterKm));
+  setStatRow('mass',
+    metrics.massEarths == null ? null : formatMass(metrics.massEarths),
+    metrics.massEarths == null ? null : formatRelative(metrics.massEarths, EARTH_METRICS.massEarths));
+  setStatRow('year',
+    metrics.yearDays == null ? null : formatYear(metrics.yearDays),
+    metrics.yearDays == null ? null : formatRelative(metrics.yearDays, EARTH_METRICS.yearDays));
+  setStatRow('day',
+    metrics.dayHours == null ? null : formatDay(metrics.dayHours),
+    metrics.dayHours == null ? null : formatRelative(metrics.dayHours, EARTH_METRICS.dayHours));
+  setStatRow('moons', metrics.moons == null ? null : String(metrics.moons), '');
+
+  wrap.style.display = 'block';
 }
 
 // ---- Tooltip ----
@@ -400,32 +687,6 @@ function updateDate() {
     });
     el.textContent = `LIVE ${liveDate} · ${liveTime}`;
   }
-}
-
-export function updateCoordinates(camPos) {
-  const ra = document.getElementById('coord-ra');
-  const dec = document.getElementById('coord-dec');
-  const dist = document.getElementById('coord-dist');
-  if (ra) ra.textContent = `RA: ${(camPos.x * 0.1).toFixed(1)}°`;
-  if (dec) dec.textContent = `Dec: ${(camPos.y * 0.1).toFixed(1)}°`;
-  const d = camPos.length();
-  if (dist) dist.textContent = `Dist: ${(d / 15).toFixed(1)} AU`;
-}
-
-export function updateZoomLevel(camDist) {
-  const ind = document.getElementById('zoom-indicator');
-  if (!ind) return;
-  const minLog = Math.log(5), maxLog = Math.log(8000);
-  const currentLog = Math.log(Math.max(5, camDist));
-  const pct = 1 - (currentLog - minLog) / (maxLog - minLog);
-  ind.style.height = Math.min(100, Math.max(0, pct * 100)) + '%';
-}
-
-export function updateCompass(camera) {
-  const needle = document.getElementById('compass-needle');
-  if (!needle) return;
-  const angle = Math.atan2(camera.position.x, camera.position.z);
-  needle.style.transform = `rotate(${angle}rad)`;
 }
 
 export function setupViewButtons(callbacks) {
