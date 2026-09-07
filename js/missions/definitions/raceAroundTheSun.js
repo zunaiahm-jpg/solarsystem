@@ -50,6 +50,10 @@ export const raceAroundTheSun = {
     labelKind: DATA_LABEL.REAL,
     prompt: 'Here is each planet\u2019s real orbital period, from the same NASA-sourced data already used by Solaris.',
     getData: realOrbitalPeriods,
+    columns: [
+      { key: 'id', label: 'Planet' },
+      { key: 'yearDays', label: 'Orbital period', format: (value) => `${value.toLocaleString()} Earth days` },
+    ],
   },
   conclusion: {
     prompt: 'In one or two sentences, explain why some planets take longer to orbit the Sun than others.',

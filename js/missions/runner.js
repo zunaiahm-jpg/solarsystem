@@ -27,13 +27,17 @@ function labelBadge(labelKind) {
  * @param {(joinCode: string) => Promise<{classId:string, className:string, students:{id:string, display_name:string}[]}>} hooks.joinClass
  * @param {(payload: object) => Promise<void>} hooks.submitAttempt
  */
+const DEFAULT_STEP_ORDER = ['intro', 'predict', 'simulate', 'observe', 'conclude', 'score'];
+
 export function openMission(mission, hooks = {}) {
   const previousState = captureSimulationState();
+  applySimulationConfig(mission.simulation);
   const overlay = el('div', { className: 'mission-overlay', attrs: { role: 'dialog', 'aria-modal': 'true', 'aria-label': mission.title } });
   const panel = el('div', { className: 'mission-panel' });
   overlay.appendChild(panel);
   document.body.appendChild(overlay);
 
+  const steps = Array.isArray(mission.stepOrder) && mission.stepOrder.length ? mission.stepOrder : DEFAULT_STEP_ORDER;
   const state = { prediction: {}, conclusionText: '', scoreResult: null };
 
   function closeOverlay() {
@@ -42,9 +46,13 @@ export function openMission(mission, hooks = {}) {
     hooks.onExit?.();
   }
 
+  function goToNextStep(currentStepName) {
+    const nextStep = steps[steps.indexOf(currentStepName) + 1];
+    if (nextStep) render(nextStep);
+  }
+
   function render(stepName) {
     panel.replaceChildren();
-    const steps = ['intro', 'predict', 'simulate', 'observe', 'conclude', 'score'];
     const progress = el('div', { className: 'mission-progress', text: `Step ${steps.indexOf(stepName) + 1} of ${steps.length}` });
     const closeButton = el('button', { className: 'mission-close', text: '\u2715', attrs: { type: 'button', 'aria-label': 'Close mission' } });
     closeButton.addEventListener('click', closeOverlay);
@@ -67,8 +75,9 @@ export function openMission(mission, hooks = {}) {
       el('h3', { text: 'Steps' }),
       el('ol', {}, mission.instructions.map((instruction) => el('li', { text: instruction }))),
     );
-    const startButton = el('button', { className: 'mission-btn mission-btn--primary', text: 'Start: make a prediction' });
-    startButton.addEventListener('click', () => render('predict'));
+    const startLabel = steps[1] === 'observe' ? 'Start: look at the clues' : 'Start: make a prediction';
+    const startButton = el('button', { className: 'mission-btn mission-btn--primary', text: startLabel });
+    startButton.addEventListener('click', () => goToNextStep('intro'));
     panel.appendChild(el('div', { className: 'mission-actions' }, [startButton]));
   }
 
@@ -76,43 +85,56 @@ export function openMission(mission, hooks = {}) {
     panel.append(labelBadge(mission.prediction.labelKind), el('p', { text: mission.prediction.prompt }));
     const fieldEls = {};
     for (const field of mission.prediction.fields) {
-      const select = el('select', { attrs: { id: `mission-field-${field.id}` } });
-      select.appendChild(el('option', { text: 'Choose\u2026', attrs: { value: '' } }));
-      for (const optionId of field.options) select.appendChild(el('option', { text: optionId, attrs: { value: optionId } }));
-      fieldEls[field.id] = select;
-      panel.append(el('label', { className: 'mission-field', text: field.label }, [select]));
+      let input;
+      if (field.type === 'number') {
+        input = el('input', { attrs: { id: `mission-field-${field.id}`, type: 'number', ...(field.min !== undefined ? { min: field.min } : {}), ...(field.max !== undefined ? { max: field.max } : {}) } });
+      } else {
+        input = el('select', { attrs: { id: `mission-field-${field.id}` } });
+        input.appendChild(el('option', { text: 'Choose\u2026', attrs: { value: '' } }));
+        for (const optionId of field.options) input.appendChild(el('option', { text: optionId, attrs: { value: optionId } }));
+      }
+      fieldEls[field.id] = input;
+      panel.append(el('label', { className: 'mission-field', text: field.label }, [input]));
     }
-    const continueButton = el('button', { className: 'mission-btn mission-btn--primary', text: 'Continue to simulation' });
+    const nextStepName = steps[steps.indexOf('predict') + 1];
+    const continueButton = el('button', { className: 'mission-btn mission-btn--primary', text: nextStepName === 'conclude' ? 'Continue to conclusion' : 'Continue' });
     continueButton.addEventListener('click', () => {
-      for (const [id, select] of Object.entries(fieldEls)) state.prediction[id] = select.value || null;
-      render('simulate');
+      for (const [id, input] of Object.entries(fieldEls)) state.prediction[id] = input.value || null;
+      goToNextStep('predict');
     });
     panel.appendChild(el('div', { className: 'mission-actions' }, [continueButton]));
   }
 
   function renderSimulate() {
-    applySimulationConfig(mission.simulation);
     panel.append(
       el('p', { text: 'Solaris is now running the simulation for this mission. Watch the 3D view, then continue when you are ready.' }),
       el('p', { className: 'mission-hint', text: 'You can still look around and interact with the 3D scene normally while this panel is open.' }),
     );
     const continueButton = el('button', { className: 'mission-btn mission-btn--primary', text: 'Continue to real data' });
-    continueButton.addEventListener('click', () => render('observe'));
+    continueButton.addEventListener('click', () => goToNextStep('simulate'));
     panel.appendChild(el('div', { className: 'mission-actions' }, [continueButton]));
   }
 
   function renderObserve() {
     panel.append(labelBadge(mission.observation.labelKind), el('p', { text: mission.observation.prompt }));
-    const rows = mission.observation.getData();
-    const table = el('table', { className: 'mission-table' }, [
-      el('tbody', {}, rows.map((row) => el('tr', {}, [
-        el('td', { text: row.id }),
-        el('td', { text: `${row.yearDays.toLocaleString()} Earth days` }),
-      ]))),
-    ]);
-    panel.appendChild(table);
-    const continueButton = el('button', { className: 'mission-btn mission-btn--primary', text: 'Continue to conclusion' });
-    continueButton.addEventListener('click', () => render('conclude'));
+    const data = mission.observation.getData();
+    state.observationData = data;
+
+    if (mission.observation.presentation === 'clues') {
+      panel.appendChild(el('ul', { className: 'mission-clue-list' }, data.clues.map((clue) => el('li', { text: clue }))));
+    } else {
+      const columns = mission.observation.columns;
+      const table = el('table', { className: 'mission-table' }, [
+        el('tbody', {}, data.map((row) => el('tr', {}, columns.map((column) => el('td', {
+          text: column.format ? column.format(row[column.key]) : String(row[column.key]),
+        }))))),
+      ]);
+      panel.appendChild(table);
+    }
+
+    const nextStepName = steps[steps.indexOf('observe') + 1];
+    const continueButton = el('button', { className: 'mission-btn mission-btn--primary', text: nextStepName === 'predict' ? 'Continue to your guess' : 'Continue to conclusion' });
+    continueButton.addEventListener('click', () => goToNextStep('observe'));
     panel.appendChild(el('div', { className: 'mission-actions' }, [continueButton]));
   }
 
@@ -130,7 +152,7 @@ export function openMission(mission, hooks = {}) {
         return;
       }
       state.conclusionText = text;
-      state.scoreResult = mission.scoring.evaluate(state.prediction, state.conclusionText);
+      state.scoreResult = mission.scoring.evaluate(state.prediction, state.conclusionText, state.observationData);
       hooks.onScored?.({
         missionId: mission.id,
         prediction: state.prediction,

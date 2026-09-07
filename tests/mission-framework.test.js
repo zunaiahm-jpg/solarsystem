@@ -59,3 +59,49 @@ test('combineScores aggregates component scores consistently', async () => {
   assert.equal(result.possible, 30);
   assert.equal(result.percentage, 33);
 });
+
+test('The Scale Problem mission satisfies the generic schema and reuses real metrics', async () => {
+  const { validateMission } = await importModule('../js/missions/schema.js');
+  const { theScaleProblem } = await importModule('../js/missions/definitions/theScaleProblem.js');
+  const { OBJECT_METRICS } = await importModule('../js/data.js');
+  assert.deepEqual(validateMission(theScaleProblem), []);
+  const rows = theScaleProblem.observation.getData();
+  assert.equal(rows.length, 8);
+  for (const row of rows) {
+    assert.equal(row.diameterKm, OBJECT_METRICS[row.id].diameterKm);
+    assert.equal(row.distanceKm, OBJECT_METRICS[row.id].distanceKm);
+  }
+});
+
+test('The Scale Problem scoring accepts a reasonable Jupiter-to-Earth estimate and the real closest-sized planet', async () => {
+  const { theScaleProblem } = await importModule('../js/missions/definitions/theScaleProblem.js');
+  const goodResult = theScaleProblem.scoring.evaluate(
+    { closestSize: 'venus', jupiterEarths: 11 },
+    'Illustrations cannot show real size and real distance at once.'
+  );
+  assert.equal(goodResult.earned, 100);
+  const poorResult = theScaleProblem.scoring.evaluate({ closestSize: 'mars', jupiterEarths: 2 }, 'x');
+  assert.equal(poorResult.earned, 0);
+});
+
+test('Solar System Detective satisfies the generic schema with a clue-first step order', async () => {
+  const { validateMission } = await importModule('../js/missions/schema.js');
+  const { solarSystemDetective } = await importModule('../js/missions/definitions/solarSystemDetective.js');
+  assert.deepEqual(validateMission(solarSystemDetective), []);
+  assert.deepEqual(solarSystemDetective.stepOrder, ['intro', 'observe', 'predict', 'conclude', 'score']);
+});
+
+test('Solar System Detective clues always name a real planet and score against that same planet', async () => {
+  const { solarSystemDetective } = await importModule('../js/missions/definitions/solarSystemDetective.js');
+  const PLANET_IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const observationData = solarSystemDetective.observation.getData();
+    assert.ok(PLANET_IDS.includes(observationData.answerId));
+    assert.ok(observationData.clues.length >= 4);
+  }
+  const observationData = { answerId: 'saturn', clues: [] };
+  const correct = solarSystemDetective.scoring.evaluate({ guess: 'saturn' }, 'The rings and moon count gave it away.', observationData);
+  const incorrect = solarSystemDetective.scoring.evaluate({ guess: 'mercury' }, 'The rings and moon count gave it away.', observationData);
+  assert.equal(correct.earned, 100);
+  assert.equal(incorrect.earned, 40);
+});

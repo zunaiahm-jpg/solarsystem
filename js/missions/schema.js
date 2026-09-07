@@ -17,6 +17,8 @@ export const DATA_LABEL_TEXT = Object.freeze({
 });
 
 const REQUIRED_STRING_FIELDS = ['id', 'title', 'description', 'ageRange', 'difficulty'];
+const KNOWN_STEPS = ['intro', 'predict', 'simulate', 'observe', 'conclude', 'score'];
+const REQUIRED_STEPS = ['intro', 'predict', 'observe', 'conclude', 'score'];
 
 /**
  * @typedef {Object} MissionSimulationConfig
@@ -64,6 +66,15 @@ export function validateMission(mission) {
     errors.push('Mission observation step must declare a valid "labelKind".');
   } else if (typeof mission.observation.getData !== 'function') {
     errors.push('Mission observation step must provide a "getData" function.');
+  } else if (mission.observation.presentation !== 'clues' && (!Array.isArray(mission.observation.columns) || mission.observation.columns.length === 0)) {
+    errors.push('Mission observation step must declare a non-empty "columns" array for its data table, unless using the "clues" presentation.');
+  }
+  if (mission.stepOrder !== undefined) {
+    if (!Array.isArray(mission.stepOrder) || mission.stepOrder.some((step) => !KNOWN_STEPS.includes(step))) {
+      errors.push('Mission "stepOrder", if provided, must be an array using only known step names.');
+    } else if (REQUIRED_STEPS.some((step) => !mission.stepOrder.includes(step))) {
+      errors.push('Mission "stepOrder" must include intro, predict, observe, conclude, and score.');
+    }
   }
   if (!mission.conclusion || typeof mission.conclusion !== 'object') {
     errors.push('Mission must include a "conclusion" step definition.');

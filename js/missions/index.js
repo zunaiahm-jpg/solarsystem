@@ -5,8 +5,10 @@
 import { validateMission } from './schema.js';
 import { openMission } from './runner.js';
 import { raceAroundTheSun } from './definitions/raceAroundTheSun.js';
+import { theScaleProblem } from './definitions/theScaleProblem.js';
+import { solarSystemDetective } from './definitions/solarSystemDetective.js';
 
-const MISSIONS = [raceAroundTheSun].filter((mission) => {
+const MISSIONS = [raceAroundTheSun, theScaleProblem, solarSystemDetective].filter((mission) => {
   const errors = validateMission(mission);
   if (errors.length) console.error(`[missions] "${mission?.id}" is invalid and was skipped:`, errors);
   return errors.length === 0;

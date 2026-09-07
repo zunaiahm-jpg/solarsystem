@@ -36,6 +36,8 @@ npm test
 4. Confirm a score appears, then click "Finish" and confirm the camera/time-speed/orbit/label controls return to what they were before the mission started.
 5. Repeat, and instead of Finish, click "Save to my class", enter a class join code from `/spaceedu/teachers/account/`, pick a student display name, and confirm the save succeeds.
 6. Confirm free exploration (search, VR button, time slider, object selection) is unaffected by the mission overlay being open or closed.
+7. Reopen Learn and try "The Scale Problem": confirm the real-data step shows a diameter/distance table (not orbital periods), and that a Jupiter-to-Earth estimate between 8–14 counts as correct.
+8. Reopen Learn and try "Solar System Detective": confirm it opens directly on real clues (no prediction step first), that the guess step appears afterward, and that scoring matches whichever planet the clues described in that session.
 
 ## Privacy
 
