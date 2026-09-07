@@ -28,8 +28,19 @@ npm test
 3. Confirm forms stack to one column, controls remain reachable, and status messages are announced/readable.
 4. Open `/explorer.html` and confirm flat-screen exploration still starts when WebXR is unavailable.
 
+## Missions manual test
+
+1. Open `/explorer.html` and confirm the scene loads and the visitor can explore freely without any Learn prompt appearing automatically.
+2. Click the new "Learn" corner icon (top-right, next to Help) and pick "Race Around the Sun".
+3. Predict the fastest and slowest planet, continue through the simulate step (time speed jumps to 20×, orbits/labels turn on), the real-data table (labeled "Real data"), and the written-explanation step.
+4. Confirm a score appears, then click "Finish" and confirm the camera/time-speed/orbit/label controls return to what they were before the mission started.
+5. Repeat, and instead of Finish, click "Save to my class", enter a class join code from `/spaceedu/teachers/account/`, pick a student display name, and confirm the save succeeds.
+6. Confirm free exploration (search, VR button, time slider, object selection) is unaffected by the mission overlay being open or closed.
+
 ## Privacy
 
 Stored personal data is limited to a teacher email, school, salted password hash, session token hash, class names, and teacher-entered student display names. Authentication throttling temporarily stores a non-reversible HMAC of the request scope, client address, and (for login) the attempted email, for up to 15 minutes; none of those raw values are stored. Student email is not requested. Student data is not sent to or shared with third parties by this feature.
 
 Teacher email ownership is not yet verified, and self-service record deletion is not included in this foundation. Treat the feature as a limited pilot until verification/recovery and deletion controls ship.
+
+Mission attempts store a mission id, the student's prediction/result/explanation text, and a score, linked to a class-scoped student profile (still no student email). Knowing a class's join code is sufficient to list that class's student display names and to read or submit mission attempts for any of them — an intentional trade-off recorded in `EDUCATION_ROADMAP.md`, appropriate for this pilot's low-stakes formative scoring.

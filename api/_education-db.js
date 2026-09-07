@@ -55,6 +55,23 @@ function ensureEducationSchema() {
 
       CREATE INDEX IF NOT EXISTS student_profiles_class_id_idx
         ON student_profiles(class_id);
+
+      CREATE TABLE IF NOT EXISTS mission_attempts (
+        id UUID PRIMARY KEY,
+        student_id UUID NOT NULL REFERENCES student_profiles(id) ON DELETE CASCADE,
+        mission_id VARCHAR(80) NOT NULL,
+        prediction JSONB,
+        result JSONB,
+        explanation TEXT,
+        score INTEGER NOT NULL,
+        max_score INTEGER NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS mission_attempts_student_id_idx
+        ON mission_attempts(student_id);
+      CREATE INDEX IF NOT EXISTS mission_attempts_mission_id_idx
+        ON mission_attempts(mission_id);
     `).catch((error) => {
       schemaPromise = undefined;
       throw error;
