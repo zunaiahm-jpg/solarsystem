@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Create or access a SolarisVR teacher account for classroom missions.">
+  <meta name="theme-color" content="#050a14">
+  <title>Teacher account — Solaris Education</title>
+  <link rel="stylesheet" href="/css/education-account.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/spaceedu/">Solaris<span>Education</span></a>
+    <nav aria-label="Account navigation">
+      <a href="/spaceedu/teachers/">Free resources</a>
+      <a href="/explorer.html">Explore Solaris</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <p class="eyebrow">Teacher mode</p>
+      <h1 id="page-title">Set up your classroom</h1>
+      <p>Teacher accounts are optional. Solaris exploration and free classroom resources remain available without signing in.</p>
+    </section>
+
+    <section id="auth-panel" class="panel auth-grid" aria-label="Teacher account access">
+      <form id="register-form">
+        <h2>Create an account</h2>
+        <p class="hint">For educators. Students do not need email addresses.</p>
+        <label>Email<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
+        <label>School<input name="school" autocomplete="organization" maxlength="160" required></label>
+        <label>Password<input name="password" type="password" autocomplete="new-password" minlength="10" maxlength="200" required></label>
+        <button type="submit">Create teacher account</button>
+        <p class="form-status" role="status"></p>
+      </form>
+
+      <form id="login-form">
+        <h2>Sign in</h2>
+        <p class="hint">Continue managing your class profiles.</p>
+        <label>Email<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" maxlength="200" required></label>
+        <button type="submit">Sign in</button>
+        <p class="form-status" role="status"></p>
+      </form>
+    </section>
+
+    <section id="setup-panel" class="panel" hidden aria-labelledby="setup-title">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Account ready</p>
+          <h2 id="setup-title">Class profile foundation</h2>
+          <p id="teacher-summary" class="hint"></p>
+        </div>
+        <button id="logout-button" class="secondary" type="button">Sign out</button>
+      </div>
+
+      <form id="class-form" class="inline-form">
+        <label>Class name<input name="name" maxlength="120" placeholder="Year 6 Astronomy" required></label>
+        <button type="submit">Create class</button>
+        <p class="form-status" role="status"></p>
+      </form>
+
+      <div id="class-list" class="class-list" aria-live="polite"></div>
+    </section>
+
+    <aside class="privacy-note" aria-labelledby="privacy-title">
+      <h2 id="privacy-title">Privacy in plain language</h2>
+      <p>We store the teacher’s email, school, securely hashed password, and class setup. Student profiles contain only a teacher-entered display name inside a class—no student email is requested. Student data is not shared with third parties.</p>
+    </aside>
+  </main>
+
+  <script src="/js/teacher-account.js" defer></script>
+</body>
+</html>
