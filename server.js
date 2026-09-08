@@ -53,8 +53,39 @@ function readBody(req) {
   });
 }
 
+// Education/mission routes live under api/_edu/ (Vercel Hobby plan caps a
+// deployment at 12 Serverless Functions; underscore-prefixed folders are
+// excluded from Function generation and dispatched via the single
+// api/education/[route].js function in prod, behind vercel.json rewrites).
+// Locally we still serve them at their original URLs by loading the handler
+// file directly — no router hop, identical behavior.
+const API_ALIAS = {
+  'teacher-register': '_edu/teacher-register',
+  'teacher-login': '_edu/teacher-login',
+  'teacher-session': '_edu/teacher-session',
+  'teacher-logout': '_edu/teacher-logout',
+  'education-classes': '_edu/education-classes',
+  'education-students': '_edu/education-students',
+  'join-class': '_edu/join-class',
+  'mission-attempts': '_edu/mission-attempts',
+  'class-results': '_edu/class-results',
+};
+
 async function handleApi(req, res, routePath) {
-  const file = path.join(ROOT, 'api', `${routePath}.js`);
+  // Route names are developer-defined identifiers, so anything outside
+  // [a-z0-9-] (or the single education/<name> dispatcher path) is rejected.
+  // This also closes a path-traversal hole where a raw request like
+  // /api/../file could require() a JS file outside api/.
+  if (!/^[a-z0-9-]+(\/[a-z0-9-]+)?$/.test(routePath)) {
+    res.status(404).json({ error: 'Not found' });
+    return;
+  }
+  let handlerPath = API_ALIAS[routePath] || routePath;
+  // Local parity with Vercel's rewrites: /api/education/<name> (and bare
+  // /api/education for the ?route= debug form) is served by the same
+  // api/education/[route].js dispatcher function used in production.
+  if (routePath === 'education' || routePath.startsWith('education/')) handlerPath = 'education/[route]';
+  const file = path.join(ROOT, 'api', `${handlerPath}.js`);
   if (!fs.existsSync(file)) {
     res.status(404).json({ error: 'Not found' });
     return;

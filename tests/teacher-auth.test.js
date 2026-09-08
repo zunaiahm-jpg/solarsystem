@@ -51,12 +51,12 @@ test('per-account login keys differ so one shared address can serve many teacher
 });
 
 test('teacher-login.js never resets the attempt budget on success', () => {
-  const source = fs.readFileSync(path.join(__dirname, '..', 'api', 'teacher-login.js'), 'utf8');
+  const source = fs.readFileSync(path.join(__dirname, '..', 'api', '_edu', 'teacher-login.js'), 'utf8');
   assert.equal(/clearRateLimit/.test(source), false);
 });
 
 test('teacher-login.js stops after the address ceiling before checking the account limiter', () => {
-  const source = fs.readFileSync(path.join(__dirname, '..', 'api', 'teacher-login.js'), 'utf8');
+  const source = fs.readFileSync(path.join(__dirname, '..', 'api', '_edu', 'teacher-login.js'), 'utf8');
   const addressIndex = source.indexOf("'teacher-login-address'");
   const addressReturnIndex = source.indexOf('return res.status(429)', addressIndex);
   const accountIndex = source.indexOf("'teacher-login-account'");

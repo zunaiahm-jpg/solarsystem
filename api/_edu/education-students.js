@@ -1,6 +1,6 @@
 const crypto = require('crypto');
-const { pool } = require('./_db');
-const { cleanText, hasValidOrigin, requireTeacher } = require('./_teacher-auth');
+const { pool } = require('../_db');
+const { cleanText, hasValidOrigin, requireTeacher } = require('../_teacher-auth');
 
 function requestedClassId(req) {
   if (req.body?.classId) return String(req.body.classId);

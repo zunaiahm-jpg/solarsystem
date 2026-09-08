@@ -1,7 +1,7 @@
 const crypto = require('crypto');
-const { pool } = require('./_db');
-const { ensureEducationSchema } = require('./_education-db');
-const { consumeRateLimit } = require('./_rate-limit');
+const { pool } = require('../_db');
+const { ensureEducationSchema } = require('../_education-db');
+const { consumeRateLimit } = require('../_rate-limit');
 const {
   cleanText,
   createTeacherSession,
@@ -9,7 +9,7 @@ const {
   hashPassword,
   isValidEmail,
   normalizeEmail,
-} = require('./_teacher-auth');
+} = require('../_teacher-auth');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });

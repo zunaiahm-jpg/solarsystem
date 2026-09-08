@@ -1,7 +1,7 @@
-const { pool } = require('./_db');
-const { ensureEducationSchema } = require('./_education-db');
-const { consumeRateLimit } = require('./_rate-limit');
-const { hasValidOrigin } = require('./_teacher-auth');
+const { pool } = require('../_db');
+const { ensureEducationSchema } = require('../_education-db');
+const { consumeRateLimit } = require('../_rate-limit');
+const { hasValidOrigin } = require('../_teacher-auth');
 
 const JOIN_CODE_PATTERN = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
 

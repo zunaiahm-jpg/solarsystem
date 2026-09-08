@@ -26,6 +26,7 @@ function labelBadge(labelKind) {
  * @param {() => void} hooks.onExit - called when the overlay closes.
  * @param {(joinCode: string) => Promise<{classId:string, className:string, students:{id:string, display_name:string}[]}>} hooks.joinClass
  * @param {(payload: object) => Promise<void>} hooks.submitAttempt
+ * @param {(studentId: string) => Promise<{attempts: object[]}>} [hooks.fetchHistory]
  */
 const DEFAULT_STEP_ORDER = ['intro', 'predict', 'simulate', 'observe', 'conclude', 'score'];
 
@@ -204,7 +205,10 @@ export function openMission(mission, hooks = {}) {
           ...students.map((student) => el('option', { text: student.display_name, attrs: { value: student.id } })),
         ]);
         const confirmButton = el('button', { className: 'mission-btn mission-btn--primary', text: 'Save my result' });
-        saveRow.replaceChildren(picker, confirmButton);
+        const historyButton = el('button', { className: 'mission-btn mission-btn--secondary', text: 'View my past results' });
+        saveRow.replaceChildren(picker, confirmButton, historyButton);
+        const historyList = el('ul', { className: 'mission-history-list' });
+        actions.appendChild(historyList);
         status.textContent = '';
         confirmButton.addEventListener('click', async () => {
           if (!picker.value) { status.textContent = 'Please choose your name first.'; return; }
@@ -222,6 +226,20 @@ export function openMission(mission, hooks = {}) {
             status.textContent = 'Saved to your class.';
           } catch (error) {
             status.textContent = error.message || 'Could not save right now.';
+          }
+        });
+        historyButton.addEventListener('click', async () => {
+          if (!picker.value) { status.textContent = 'Please choose your name first.'; return; }
+          if (!hooks.fetchHistory) { status.textContent = 'Result history is not available right now.'; return; }
+          status.textContent = 'Loading your results\u2026';
+          try {
+            const { attempts = [] } = await hooks.fetchHistory(picker.value);
+            status.textContent = '';
+            historyList.replaceChildren(...(attempts.length
+              ? attempts.map((attempt) => el('li', { text: `${attempt.mission_id}: ${attempt.score}/${attempt.max_score}` }))
+              : [el('li', { text: 'No past results yet.' })]));
+          } catch (error) {
+            status.textContent = error.message || 'Could not load your results.';
           }
         });
       } catch (error) {

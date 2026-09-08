@@ -49,6 +49,13 @@ async function submitAttempt(payload) {
   return data;
 }
 
+async function fetchHistory(studentId) {
+  const response = await fetch(`/api/mission-attempts?studentId=${encodeURIComponent(studentId)}`);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Your results could not be loaded.');
+  return data;
+}
+
 function buildLearnButton() {
   const button = document.createElement('div');
   button.id = 'learn-btn';
@@ -111,6 +118,7 @@ function init() {
     openMission(mission, {
       joinClass,
       submitAttempt,
+      fetchHistory,
       onScored: saveLocalAttempt,
     });
   });

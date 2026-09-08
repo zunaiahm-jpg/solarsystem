@@ -108,9 +108,50 @@
       }
     });
 
-    article.append(header, count, students, form);
+    const resultsButton = document.createElement('button');
+    resultsButton.type = 'button';
+    resultsButton.className = 'secondary';
+    resultsButton.textContent = 'View results';
+    const resultsPanel = document.createElement('div');
+    resultsPanel.className = 'results-panel';
+    resultsPanel.hidden = true;
+    resultsButton.addEventListener('click', async () => {
+      const opening = resultsPanel.hidden;
+      resultsPanel.hidden = !opening;
+      if (!opening) return;
+      resultsPanel.textContent = 'Loading results\u2026';
+      try {
+        const result = await api(`/api/class-results?classId=${encodeURIComponent(classroom.id)}`);
+        resultsPanel.replaceChildren(...resultRows(result.students || []));
+      } catch (error) {
+        resultsPanel.textContent = error.message;
+      }
+    });
+
+    article.append(header, count, students, form, resultsButton, resultsPanel);
     loadStudents(classroom.id, students, count);
     return article;
+  }
+
+  function resultRows(students) {
+    if (!students.length) return [document.createTextNode('No student profiles yet.')];
+    return students.map((student) => {
+      const row = document.createElement('div');
+      row.className = 'result-row';
+      const name = document.createElement('strong');
+      name.textContent = student.displayName;
+      const summary = document.createElement('span');
+      const attempts = student.attempts || [];
+      if (!attempts.length) {
+        summary.textContent = 'No mission attempts yet.';
+      } else {
+        summary.textContent = attempts
+          .map((attempt) => `${attempt.missionId}: ${attempt.score}/${attempt.maxScore}`)
+          .join(' \u00b7 ');
+      }
+      row.append(name, summary);
+      return row;
+    });
   }
 
   async function loadClasses() {

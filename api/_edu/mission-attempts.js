@@ -1,8 +1,8 @@
 const crypto = require('crypto');
-const { pool } = require('./_db');
-const { ensureEducationSchema } = require('./_education-db');
-const { consumeRateLimit } = require('./_rate-limit');
-const { cleanText, hasValidOrigin } = require('./_teacher-auth');
+const { pool } = require('../_db');
+const { ensureEducationSchema } = require('../_education-db');
+const { consumeRateLimit } = require('../_rate-limit');
+const { cleanText, hasValidOrigin } = require('../_teacher-auth');
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_JSON_LENGTH = 4000;

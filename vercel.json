@@ -1,6 +1,17 @@
 {
   "buildCommand": null,
   "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/api/teacher-register", "destination": "/api/education/teacher-register" },
+    { "source": "/api/teacher-login", "destination": "/api/education/teacher-login" },
+    { "source": "/api/teacher-session", "destination": "/api/education/teacher-session" },
+    { "source": "/api/teacher-logout", "destination": "/api/education/teacher-logout" },
+    { "source": "/api/education-classes", "destination": "/api/education/education-classes" },
+    { "source": "/api/education-students", "destination": "/api/education/education-students" },
+    { "source": "/api/join-class", "destination": "/api/education/join-class" },
+    { "source": "/api/mission-attempts", "destination": "/api/education/mission-attempts" },
+    { "source": "/api/class-results", "destination": "/api/education/class-results" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

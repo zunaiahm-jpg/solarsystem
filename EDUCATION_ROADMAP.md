@@ -12,6 +12,10 @@
    - Real/model/hypothetical labeling shown on every mission data step
    - Optional "save to my class" flow (join code → pick your name → save) plus always-on local browser history, so saving a result never requires an account
    - Three missions shipped on the shared framework: **Race Around the Sun** (orbital periods), **The Scale Problem** (real size/distance vs. illustrated scale), **Solar System Detective** (clue-based identification, beginner tier only)
+3. Mission results views + Vercel deploy consolidation — 2026-09-08
+   - Teacher "View results" per class (`/api/class-results`): each student's saved attempts (mission, score/max, timestamp), teacher-authenticated and strictly scoped to classes the signed-in teacher owns
+   - Student "View my past results" inside the mission runner after picking their class name — reads only their own attempts
+   - Vercel Hobby 12-function-cap fix: the 9 education route handlers moved unchanged to `api/_edu/` (excluded from Function generation) behind one `api/education/[route].js` dispatcher + `vercel.json` rewrites, so every original public `/api/<name>` URL is preserved; local `server.js` maps the same paths directly for identical dev behavior
 
 ## In progress
 
@@ -20,8 +24,8 @@
 ## Next up
 
 1. Solar System Detective intermediate/advanced clue tiers
-2. Quizzes & scoring
-3. Teacher dashboard v1
+2. Quizzes & scoring (results views for student/teacher shipped 2026-09-08; remaining: attachable short quizzes and auto-scored prediction/observation/analysis/conclusion components)
+3. Teacher dashboard v1 (per-class results read half shipped 2026-09-08; remaining: assignments, completion %, flagging students needing help)
 4. Challenge mode
 5. What-if experiment framework
 6. Worksheets & resources
@@ -45,3 +49,7 @@
 - 2026-09-06 — Student profiles are class-scoped display names without email, minimizing data collection while supporting future mission progress.
 - 2026-09-06 — Added the account UI as a self-contained route rather than editing the generated SpaceEdu bundle or the Solaris 3D runtime.
 - 2026-09-06 — Public-pilot limitation: teacher emails are not yet verified; verification/recovery and teacher-controlled deletion are required before broad school rollout.
+- 2026-09-08 — Vercel Hobby caps a deployment at 12 Serverless Functions; the 9 education routes live unchanged under `api/_edu/` (underscore-prefixed folders are excluded from Function generation) and are dispatched by the single `api/education/[route].js` dynamic function behind `vercel.json` rewrites, so no original request URL changed and the deployment stays at 6 functions.
+- 2026-09-08 — Rewrites use path-form destinations (`/api/education/<name>`) rather than query-form (`?route=<name>`) so each request's own query string (`?classId=`, `?studentId=`) always survives, independent of destination-query merge semantics.
+- 2026-09-08 — `server.js` maps the 9 education URLs directly to `api/_edu/<name>.js` (and `/api/education/<name>` to the dispatcher) so local dev matches production routing without a rewrite layer; `handleApi` now validates route names against `^[a-z0-9-]+(/[a-z0-9-]+)?$`, closing a local-dev `require()` path traversal via `/api/../<file>`.
+- 2026-09-08 — Results views reuse the existing `mission_attempts` table with no schema change: the teacher view aggregates per class via a single owned-class join; the student view reuses the existing `GET /api/mission-attempts` endpoint, adding only UI.

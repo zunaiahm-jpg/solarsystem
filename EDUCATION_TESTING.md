@@ -39,6 +39,21 @@ npm test
 7. Reopen Learn and try "The Scale Problem": confirm the real-data step shows a diameter/distance table (not orbital periods), and that a Jupiter-to-Earth estimate between 8–14 counts as correct.
 8. Reopen Learn and try "Solar System Detective": confirm it opens directly on real clues (no prediction step first), that the guess step appears afterward, and that scoring matches whichever planet the clues described in that session.
 
+## Results views manual test
+
+1. On `/spaceedu/teachers/account/`, after creating a class and at least one student, click "View results" on the class card: confirm the panel lists every student ("No mission attempts yet." for new ones) without affecting other classes.
+2. Save a mission attempt for a student (see Missions manual test step 5), then re-open "View results": confirm the attempt appears as `mission: score/max`.
+3. Click "View results" again to collapse the panel, and once more to re-fetch — confirm it toggles and re-loads cleanly.
+4. In `/explorer.html`, start any mission, click "Save to my class", pick a student, then click "View my past results": confirm the list shows only that student's attempts (or "No past results yet.").
+5. Sign in as a different teacher and request the first teacher's class id via `/api/class-results?classId=<id>` (devtools/console): confirm a 404, not the roster.
+
+## Deployment test (Vercel)
+
+1. Confirm the Vercel project has `DATABASE_URL` (Neon connection string) and `AUTH_RATE_LIMIT_SECRET` set; functions return 500 without `DATABASE_URL`.
+2. After deploy, hit `https://<deployment-url>/api/education/mission-attempts?studentId=not-a-uuid` and confirm a 400 JSON error (`A valid studentId is required.`) — this proves rewrites, the `[route]` dispatcher, and query-string survival all work in production.
+3. Confirm `https://<deployment-url>/api/class-results` (no cookie) returns 401, and `/api/teacher-session` (no cookie) returns 401.
+4. Confirm the static site still serves `/` and `/explorer.html` and the old direct function routes (`/api/register`, `/api/responses`, `/api/admin-login`, `/api/admin-responses`, `/api/space-chat`) still answer (405 for wrong method is expected — the point is they are not 404).
+
 ## Privacy
 
 Stored personal data is limited to a teacher email, school, salted password hash, session token hash, class names, and teacher-entered student display names. Authentication throttling temporarily stores a non-reversible HMAC of the request scope, client address, and (for login) the attempted email, for up to 15 minutes; none of those raw values are stored. Student email is not requested. Student data is not sent to or shared with third parties by this feature.
